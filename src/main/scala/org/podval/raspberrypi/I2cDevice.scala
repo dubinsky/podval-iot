@@ -22,7 +22,7 @@ class I2cDevice(bus: I2cBus, address: Int) {
   I2cBus.checkAddress(address)
 
 
-  final def write(data: Array[Byte]): Int = {
+  final def write(data: Seq[Int]): Int = {
     val setResult = bus.setSlaveAddress(address)
     if (setResult < 0) setResult else bus.write(data)
   }

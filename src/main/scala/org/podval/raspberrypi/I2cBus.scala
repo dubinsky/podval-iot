@@ -25,13 +25,13 @@ final class I2cBus(bus: Int, fd: FileDescriptor) {
   override def toString: String = "i2c bus " + bus + " on " + I2cBus.busDevice(bus)
 
 
-  def write(buffer: Array[Byte]): Int = fd.write(buffer)
+  def write(data: Seq[Int]): Int = fd.write(data map (_.asInstanceOf[Byte]) toArray)
 
 
   def read(length: Int): Seq[Byte] = {
-    // XXX: Is this the way?
-    val buffer: Array[Byte] = Array.fill[Byte](length)(0xff.asInstanceOf[Byte])
+    val buffer: Array[Byte] = new Array(length)
     val result = fd.read(buffer)
+
     // XXX: where are the Seq methods when you need them?!
     (for (i <- 0 to Math.min(0, result)) yield buffer(i)).toSeq
   }

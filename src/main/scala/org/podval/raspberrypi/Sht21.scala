@@ -17,19 +17,53 @@
 package org.podval.raspberrypi
 
 
-final class Sht21(bus: I2cBus) extends I2cDevice(bus, 0x80) {
+final class Sht21(bus: I2cBus) extends I2cDevice(bus, 0x40) {
 
-  def temperature: Float = {
-    // XXX: write the command
-    // XXX: wait
-    // XXX: read the result
-    // XXX: convert
-    0.0f
+  def temperature: Float = convertTemperature(readMeasurement(0xf3, false))
+  
+
+  def temperatureHold: Float = convertTemperature(readMeasurement(0xf5, true))
+  
+
+  def humidity: Float = convertHumidity(readMeasurement(0xe3, false))
+  
+
+  def humidityHold: Float = convertHumidity(readMeasurement(0xe5, true))
+
+
+  def convertTemperature(value: Int) = convert(value, -46.85f, 175.72f)
+
+
+  def convertHumidity(value: Int) = convert(value, -6.0f, 125.0f)
+
+  
+  def convert(value: Int, a: Float, b: Float): Float = a + b * value / 65535.0f
+
+  
+  def readMeasurement(command: Int, hold: Boolean) = {
+    val status = write(Seq(command.asInstanceOf[Byte]))
+    if (status != 0) {
+      // server.log("write status= " + status);
+    }
+    
+    if (hold == false) {
+      // wait for conversion, 14 bits = 85ms
+      Thread.sleep(85)
+    }
+    
+    val bytes = read(3)
+    if (bytes.isEmpty) 0 else {
+      val result = (bytes(0) << 8) | (bytes(1) & 0xfc)
+      // val checksum = bytes(2)
+      // val stat = bytes(1) & 0x3
+      // check the sum
+      result
+    }
   }
 
-
-  def humidity: Float = {
-    // XXX
-    0.0f
+  
+  def readUserRegister = {
+    write(Seq(0xe7.asInstanceOf[Byte]))
+    read(1)(0)
   }
 }

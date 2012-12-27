@@ -44,7 +44,7 @@ object FileDescriptor {
 
 
   def apply(clib: CLib, path: String, isWrite: Boolean): FileDescriptor = {
-    val result = clib.open(path, if (isWrite) 0x02 else 0x01) // XXX: check modes
+    val result = clib.open(path, if (isWrite) 0x02 else 0x00) // XXX: check modes
     require(result >= 0, "failed to open " + path)
     new FileDescriptor(clib, path, isWrite, result)
   }
