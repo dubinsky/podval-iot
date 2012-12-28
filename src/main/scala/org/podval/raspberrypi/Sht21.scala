@@ -22,10 +22,10 @@ final class Sht21(bus: I2cBus) extends I2cDevice(bus, 0x40) {
   def temperature: Float = convertTemperature(readMeasurement(0xf3, false))
   
 
-  def temperatureHold: Float = convertTemperature(readMeasurement(0xf5, true))
+  def temperatureHold: Float = convertTemperature(readMeasurement(0xe3, true))
   
 
-  def humidity: Float = convertHumidity(readMeasurement(0xe3, false))
+  def humidity: Float = convertHumidity(readMeasurement(0xf5, false))
   
 
   def humidityHold: Float = convertHumidity(readMeasurement(0xe5, true))
@@ -41,7 +41,7 @@ final class Sht21(bus: I2cBus) extends I2cDevice(bus, 0x40) {
 
   
   def readMeasurement(command: Int, hold: Boolean) = {
-    val status = write(Seq(command.asInstanceOf[Byte]))
+    val status = write(Seq(command))
     if (status != 0) {
       // server.log("write status= " + status);
     }
@@ -63,7 +63,7 @@ final class Sht21(bus: I2cBus) extends I2cDevice(bus, 0x40) {
 
   
   def readUserRegister = {
-    write(Seq(0xe7.asInstanceOf[Byte]))
+    write(Seq(0xe7))
     read(1)(0)
   }
 }

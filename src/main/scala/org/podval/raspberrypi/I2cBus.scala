@@ -19,28 +19,44 @@ package org.podval.raspberrypi
 
 final class I2cBus(bus: Int, fd: FileDescriptor) {
 
+  if (bus < 0) {
+    throw new IllegalArgumentException("Invalid bus number: " + bus)
+  }
+
+
   def close = fd.close
 
 
   override def toString: String = "i2c bus " + bus + " on " + I2cBus.busDevice(bus)
 
 
-  def write(data: Seq[Int]): Int = fd.write(data map (_.asInstanceOf[Byte]) toArray)
+  def write(data: Seq[Int]): Int = fd.write(data.map(_.asInstanceOf[Byte]).toArray)
 
 
   def read(length: Int): Seq[Byte] = {
     val buffer: Array[Byte] = new Array(length)
     val result = fd.read(buffer)
-
-    // XXX: where are the Seq methods when you need them?!
-    (for (i <- 0 to Math.min(0, result)) yield buffer(i)).toSeq
+    buffer.take(math.max(0, result))
   }
 
 
-  def setSlaveAddress(address: Int): Int = {
+  def setSlaveAddress(address: Int) {
     I2cBus.checkAddress(address)
-    require(address >= 0 && address <= 0xff, "Invalid address " + address)
-    fd.ioctl(I2cBus.SET_SLAVE_ADDRESS, address)
+
+    val result = fd.ioctl(I2cBus.SET_SLAVE_ADDRESS, address)
+
+    val ok = result >= 0
+
+    if (!ok) {
+      throw new NoSuchElementException("No device at address " + address + " on " + this)
+    }
+  }
+
+
+  def isPresent(address: Int): Boolean = {
+    setSlaveAddress(address)
+    val bytes = read(address)
+    !bytes.isEmpty
   }
 }
 
@@ -57,7 +73,9 @@ object I2cBus {
   def busDevice(bus: Int): String = busDevicePrefix + bus
 
 
-  def checkAddress(address: Int) = require(address >= 0 && address <= 0xff, "Invalid address " + address)
+  def checkAddress(address: Int) {
+    if (address < 0 || address > 0xff) throw new IllegalArgumentException("Invalid i2c address " + address)
+  }
 
 
   def apply(clib: CLib, bus: Int): I2cBus = new I2cBus(bus, FileDescriptor(clib, busDevice(bus)))

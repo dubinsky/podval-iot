@@ -32,4 +32,32 @@ object RaspberryPi {
 
 
   lazy val i2c = if (revision > 1) i2c1 else i2c0
+
+
+  def main(args: Array[String]) {
+    val sensor = new Sht21(i2c)
+    val display = new SevenSegment(i2c)
+
+    while (true) {
+      val temperature = math.max(0, math.round(sensor.temperature))
+      val humidity = math.max(0, math.round(sensor.humidity))
+
+      println("temperature=" + temperature + " humidity=" + humidity)
+
+      display.writeDigit(0, temperature / 10)
+      display.writeDigit(1, temperature % 10, true)
+
+      display.writeDigit(3, humidity / 10)
+      display.writeDigit(4, humidity % 10, true)
+
+      display.update
+
+      Thread.sleep(1000)
+    }
+  }
+
+
+  def detect {
+    println((0x00 to 0x77).filter(i2c.isPresent(_)))
+  }
 }

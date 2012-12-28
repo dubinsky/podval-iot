@@ -22,14 +22,19 @@ class I2cDevice(bus: I2cBus, address: Int) {
   I2cBus.checkAddress(address)
 
 
+  // XXX: add flavours for writing:
+  // one byte
+  // bytes to a register
+  // one byte to a register
+
   final def write(data: Seq[Int]): Int = {
-    val setResult = bus.setSlaveAddress(address)
-    if (setResult < 0) setResult else bus.write(data)
+    bus.setSlaveAddress(address)
+    bus.write(data)
   }
 
 
   final def read(length: Int): Seq[Byte] = {
-    val setResult = bus.setSlaveAddress(address)
-    if (setResult < 0) Seq() else bus.read(length)
+    bus.setSlaveAddress(address)
+    bus.read(length)
   }
 }

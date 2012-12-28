@@ -21,7 +21,14 @@ import com.sun.jna.NativeLong
 import java.nio.ByteBuffer
 
 
-final class FileDescriptor(clib: CLib, path: String, isWrite: Boolean, fd: Int) {
+final class FileDescriptor(clib: CLib, path: String, isWrite: Boolean) {
+
+  val mode = if (isWrite) 0x02 else 0x00
+
+  val fd = clib.open(path, mode)
+
+  require(fd >= 0, "failed to open " + path)
+
 
   def close: Int = clib.close(fd)
 
@@ -43,9 +50,6 @@ object FileDescriptor {
   def apply(clib: CLib, path: String): FileDescriptor = apply(clib, path, true)
 
 
-  def apply(clib: CLib, path: String, isWrite: Boolean): FileDescriptor = {
-    val result = clib.open(path, if (isWrite) 0x02 else 0x00) // XXX: check modes
-    require(result >= 0, "failed to open " + path)
-    new FileDescriptor(clib, path, isWrite, result)
-  }
+  def apply(clib: CLib, path: String, isWrite: Boolean): FileDescriptor =
+    new FileDescriptor(clib, path, isWrite)
 }

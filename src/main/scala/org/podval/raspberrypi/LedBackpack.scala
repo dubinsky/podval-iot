@@ -17,87 +17,83 @@
 package org.podval.raspberrypi
 
 
-final class LedBackpack(bus: I2cBus, number: Int) extends I2cDevice(bus, 0x70 << 1 + number << 1) {
+/**
+ * Adafruit's HT16K33-base LED backpack.
+ */
+// XXX: Encapsulate the underlying read/write?
+class LedBackpack(bus: I2cBus, number: Int) extends I2cDevice(bus, 0x70 + number) {
 
-  // XXX: check that the number is legal
+  if (number < 0 || number > 7) {
+    throw new IllegalArgumentException("Invalid LED backpack address: " + number)
+  }
 
-  val HT16K33_REGISTER_DISPLAY_SETUP: Byte = 0x80.asInstanceOf[Byte]
-  val HT16K33_REGISTER_SYSTEM_SETUP : Byte = 0x20.asInstanceOf[Byte]
-  val HT16K33_REGISTER_DIMMING      : Byte = 0xE0.asInstanceOf[Byte]
+  val buffer = new Array[Int](8)
+
+  // Turn the oscillator on
+  write(Seq(LedBackpack.SYSTEM_SETUP_REGISTER | 0x01, 0x00))
+
+  // Turn blink off
+  setBlinkRate(LedBackpack.BlinkOff)
+
+  // Set maximum brightness
+  setBrightness(15)
+
+  // Clear the screen
+  clear
+  update
 
 
-  def setBrightness(brightness: Int) {
-    require(brightness >= 0 && brightness <= 15)
-//    write(Seq[Byte]{ HT16K33_REGISTER_DIMMING | brightness, 0x00.asInstanceOf[Byte] })
+  def clear {
+//    buffer.fill(0)
+
+    for (i <- 0 until buffer.length) {
+      buffer(i) = 0x00
+    }
+  }
+
+
+  def update {
+    val bytes = new Array[Int](1+buffer.length*2)
+    bytes(0) = 0x00
+    for (i <- 0 until buffer.length) {
+      bytes(1+i*2) = buffer(i) & 0xff
+      bytes(2+i*2) = (buffer(i) >> 8) & 0xff
+    }
+
+    write(bytes)
+  }
+
+  def setBrightness(value: Int) {
+    if (value < 0 || value > 15) {
+      throw new IllegalArgumentException("Brightness must be between 0 and 15, not " + value)
+    }
+
+    write(Seq(LedBackpack.DIMMING_REGISTER | value, 0x00 ))
+  }
+
+
+  def setBlinkRate(value: LedBackpack.BlinkRate) {
+    val rate = value match {
+      case LedBackpack.BlinkOff => 0x00
+      case LedBackpack.Blink2Hz => 0x01
+      case LedBackpack.Blink1Hz => 0x02
+      case LedBackpack.BlinkHalfHz => 0x03
+    }
+
+    write(Seq(LedBackpack.DISPLAY_SETUP_REGISTER | 0x01 | (rate << 1), 0x00))
   }
 }
 
-/*
 
-  # Blink rate
-  __HT16K33_BLINKRATE_OFF                 = 0x00
-  __HT16K33_BLINKRATE_2HZ                 = 0x01
-  __HT16K33_BLINKRATE_1HZ                 = 0x02
-  __HT16K33_BLINKRATE_HALFHZ              = 0x03
+object LedBackpack {
+  
+  private val SYSTEM_SETUP_REGISTER : Int = 0x20
+  private val DIMMING_REGISTER      : Int = 0xe0
+  private val DISPLAY_SETUP_REGISTER: Int = 0x80
 
-  # Display buffer (8x16-bits)
-  __buffer = [0x0000, 0x0000, 0x0000, 0x0000, \
-              0x0000, 0x0000, 0x0000, 0x0000 ]
-
-  # Constructor
-  def __init__(self, address=0x70, debug=False):
-    self.i2c = Adafruit_I2C(address)
-    self.address = address
-    self.debug = debug
-
-    # Turn the oscillator on
-    self.i2c.write8(self.__HT16K33_REGISTER_SYSTEM_SETUP | 0x01, 0x00)
-
-    # Turn blink off
-    self.setBlinkRate(self.__HT16K33_BLINKRATE_OFF)
-
-    # Set maximum brightness
-    self.setBrightness(15)
-
-    # Clear the screen
-    self.clear()
-
-  def setBrightness(self, brightness):
-    "Sets the brightness level from 0..15"
-    if (brightness > 15):
-      brightness = 15
-    self.i2c.write8(self.__HT16K33_REGISTER_DIMMING | brightness, 0x00)
-
-  def setBlinkRate(self, blinkRate):
-    "Sets the blink rate"
-    if (blinkRate > self.__HT16K33_BLINKRATE_HALFHZ):
-       blinkRate = self.__HT16K33_BLINKRATE_OFF
-    self.i2c.write8(self.__HT16K33_REGISTER_DISPLAY_SETUP | 0x01 | (blinkRate << 1), 0x00)
-
-  def setBufferRow(self, row, value, update=True):
-    "Updates a single 16-bit entry in the 8*16-bit buffer"
-    if (row > 7):
-      return                    # Prevent buffer overflow
-    self.__buffer[row] = value  # value # & 0xFFFF
-    if (update):
-      self.writeDisplay()       # Update the display
-
-  def getBuffer(self):
-    "Returns a copy of the raw buffer contents"
-    bufferCopy = copy(self.__buffer)
-    return bufferCopy
- 
-  def writeDisplay(self):
-    "Updates the display memory"
-    bytes = []
-    for item in self.__buffer:
-      bytes.append(item & 0xFF)
-      bytes.append((item >> 8) & 0xFF)
-    self.i2c.writeList(0x00, bytes)
-
-  def clear(self, update=True):
-    "Clears the display memory"
-    self.__buffer = [ 0, 0, 0, 0, 0, 0, 0, 0 ]
-    if (update):
-      self.writeDisplay()
-*/
+  sealed trait BlinkRate
+  case object BlinkOff extends BlinkRate
+  case object Blink1Hz extends BlinkRate
+  case object Blink2Hz extends BlinkRate
+  case object BlinkHalfHz extends BlinkRate
+}

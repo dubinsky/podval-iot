@@ -40,7 +40,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <scala.version>2.10.0-RC3</scala.version>
+<!--        <scala.version>2.10.0-RC5</scala.version>-->
+        <scala.version>2.9.2</scala.version>
     </properties>
 
     <repositories>
@@ -94,6 +95,7 @@
                             <arg>-unchecked</arg>
                             <arg>-deprecation</arg>
                             <arg>-explaintypes</arg>
+                            <!--<arg>-feature</arg>-->
                         </args>
                         <javacArgs>
                             <javacArg>-Xlint:unchecked</javacArg>
@@ -132,7 +134,7 @@
             <dependency>
                 <groupId>net.java.dev.jna</groupId>
                 <artifactId>jna</artifactId>
-                <version>3.2.5</version>
+                <version>3.4.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -151,10 +153,12 @@
         </dependency>
         -->
 
+        <!--
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_${scala.version}</artifactId>
         </dependency>
+        -->
 
         <dependency>
             <groupId>net.java.dev.jna</groupId>
