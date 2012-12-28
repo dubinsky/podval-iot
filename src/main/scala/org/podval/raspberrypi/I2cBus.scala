@@ -35,12 +35,19 @@ final class I2cBus(bus: Int) {
   override def toString: String = "i2c bus " + bus + " on " + I2cBus.busDevice(bus)
 
 
-  def write(data: Seq[Int]) = file.write(data.map(_.asInstanceOf[Byte]).toArray)
+  def writeByte(data: Int) = file.write(data.asInstanceOf[Byte])
 
 
-  def read(length: Int): Seq[Byte] = {
+  def writeBytes(data: Seq[Int]) = file.write(data.map(_.asInstanceOf[Byte]).toArray)
+
+
+  def readByte = file.readByte
+
+
+  def readBytes(length: Int): Seq[Byte] = {
     val buffer: Array[Byte] = new Array(length)
     val result = file.read(buffer)
+    // XXX: when length is right, there is no copying? Right?!
     buffer.take(math.max(0, result))
   }
 
@@ -60,7 +67,7 @@ final class I2cBus(bus: Int) {
 
   def isPresent(address: Int): Boolean = {
     setSlaveAddress(address)
-    val bytes = read(address)
+    val bytes = readBytes(address)
     !bytes.isEmpty
   }
 }

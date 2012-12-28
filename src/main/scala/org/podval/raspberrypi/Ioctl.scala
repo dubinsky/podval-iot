@@ -16,28 +16,10 @@
 
 package org.podval.raspberrypi
 
-import com.sun.jna.{Native, Library}
-
 import java.io.{FileInputStream, FileOutputStream, RandomAccessFile, FileDescriptor}
 
-import sun.misc.SharedSecrets
-
-
-// XXX redo without JNA open/close/read/write?
-// If I can get at the fd, there is no need for JNA support of anything other than ioctl()...
-// There seems to be a way to do this without using reflection (to get at java.io.FileDescripto.fd),
-// even if this only works on "Sun" JVM...
 
 object Ioctl {
-
-  trait Ioctl extends Library {
-  
-    def ioctl(fd: Int, command: Int, data: Int): Int
-  }
-
-
-  private val ioctl: Ioctl = Native.loadLibrary("c", classOf[Ioctl]).asInstanceOf[Ioctl]
-
 
   def ioctl(file: FileInputStream, command: Int, data: Int): Int = ioctl(getFd(file.getFD), command, data)
 
@@ -48,8 +30,23 @@ object Ioctl {
   def ioctl(file: RandomAccessFile, command: Int, data: Int): Int = ioctl(getFd(file.getFD), command, data)
 
 
-  def ioctl(fd: Int, command: Int, data: Int): Int = ioctl.ioctl(fd, command, data)
+  import sun.misc.SharedSecrets
 
 
   private def getFd(fd: FileDescriptor) = SharedSecrets.getJavaIOFileDescriptorAccess.get(fd)
+
+
+  import com.sun.jna.{Native, Library}
+
+
+  private trait Ioctl extends Library {
+  
+    def ioctl(fd: Int, command: Int, data: Int): Int
+  }
+
+
+  private val ioctl: Ioctl = Native.loadLibrary("c", classOf[Ioctl]).asInstanceOf[Ioctl]
+
+
+  private def ioctl(fd: Int, command: Int, data: Int): Int = ioctl.ioctl(fd, command, data)
 }

@@ -22,19 +22,29 @@ class I2cDevice(bus: I2cBus, address: Int) {
   I2cBus.checkAddress(address)
 
 
-  // XXX: add flavours for writing:
-  // one byte
-  // bytes to a register
-  // one byte to a register
-
-  final def write(data: Seq[Int]) {
+  final def writeByte(data: Int) {
     bus.setSlaveAddress(address)
-    bus.write(data)
+    writeBytes(Seq(data))
   }
 
 
-  final def read(length: Int): Seq[Byte] = {
+  final def writeByte(reg: Int, data: Int) = writeBytes(Seq(reg, data))
+
+
+  final def writeBytes(data: Seq[Int]) {
     bus.setSlaveAddress(address)
-    bus.read(length)
+    bus.writeBytes(data)
+  }
+
+
+  final def readByte: Byte = {
+    bus.setSlaveAddress(address)
+    bus.readByte
+  }
+
+
+  final def readBytes(length: Int): Seq[Byte] = {
+    bus.setSlaveAddress(address)
+    bus.readBytes(length)
   }
 }

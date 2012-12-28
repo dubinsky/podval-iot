@@ -20,7 +20,7 @@ package org.podval.raspberrypi
 /**
  * Adafruit's HT16K33-base LED backpack.
  */
-// XXX: Encapsulate the underlying read/write?
+// XXX: Encapsulate the underlying read/write: protected final - or containment?
 class LedBackpack(bus: I2cBus, number: Int) extends I2cDevice(bus, 0x70 + number) {
 
   if (number < 0 || number > 7) {
@@ -30,7 +30,7 @@ class LedBackpack(bus: I2cBus, number: Int) extends I2cDevice(bus, 0x70 + number
   val buffer = new Array[Int](8)
 
   // Turn the oscillator on
-  write(Seq(LedBackpack.SYSTEM_SETUP_REGISTER | 0x01, 0x00))
+  writeByte0(LedBackpack.SYSTEM_SETUP_REGISTER | 0x01)
 
   // Turn blink off
   setBlinkRate(LedBackpack.BlinkOff)
@@ -44,7 +44,7 @@ class LedBackpack(bus: I2cBus, number: Int) extends I2cDevice(bus, 0x70 + number
 
 
   def clear {
-//    buffer.fill(0)
+// XXX:   buffer.fill(0)
 
     for (i <- 0 until buffer.length) {
       buffer(i) = 0x00
@@ -52,6 +52,7 @@ class LedBackpack(bus: I2cBus, number: Int) extends I2cDevice(bus, 0x70 + number
   }
 
 
+  // XXX: Introduce I2cDevice.writeInts(reg, Seq[Int])
   def update {
     val bytes = new Array[Int](1+buffer.length*2)
     bytes(0) = 0x00
@@ -60,7 +61,7 @@ class LedBackpack(bus: I2cBus, number: Int) extends I2cDevice(bus, 0x70 + number
       bytes(2+i*2) = (buffer(i) >> 8) & 0xff
     }
 
-    write(bytes)
+    writeBytes(bytes)
   }
 
   def setBrightness(value: Int) {
@@ -68,7 +69,7 @@ class LedBackpack(bus: I2cBus, number: Int) extends I2cDevice(bus, 0x70 + number
       throw new IllegalArgumentException("Brightness must be between 0 and 15, not " + value)
     }
 
-    write(Seq(LedBackpack.DIMMING_REGISTER | value, 0x00 ))
+    writeByte0(LedBackpack.DIMMING_REGISTER | value)
   }
 
 
@@ -80,8 +81,11 @@ class LedBackpack(bus: I2cBus, number: Int) extends I2cDevice(bus, 0x70 + number
       case LedBackpack.BlinkHalfHz => 0x03
     }
 
-    write(Seq(LedBackpack.DISPLAY_SETUP_REGISTER | 0x01 | (rate << 1), 0x00))
+    writeByte0(LedBackpack.DISPLAY_SETUP_REGISTER | 0x01 | (rate << 1))
   }
+
+
+  private[this] def writeByte0(reg: Int) = writeByte(reg, 0x00)
 }
 
 

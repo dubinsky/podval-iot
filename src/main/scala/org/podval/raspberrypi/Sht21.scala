@@ -41,14 +41,15 @@ final class Sht21(bus: I2cBus) extends I2cDevice(bus, 0x40) {
 
   
   def readMeasurement(command: Int, hold: Boolean) = {
-    val status = write(Seq(command))
+    val status = writeByte(command)
     
     if (hold == false) {
       // wait for conversion, 14 bits = 85ms
       Thread.sleep(85)
     }
     
-    val bytes = read(3)
+    val bytes = readBytes(3)
+    // XXX: Signal failed read better!
     if (bytes.isEmpty) 0 else {
       val result = (bytes(0) << 8) | (bytes(1) & 0xfc)
       // val checksum = bytes(2)
@@ -60,7 +61,7 @@ final class Sht21(bus: I2cBus) extends I2cDevice(bus, 0x40) {
 
   
   def readUserRegister = {
-    write(Seq(0xe7))
-    read(1)(0)
+    writeByte(0xe7)
+    readByte
   }
 }
