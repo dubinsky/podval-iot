@@ -4,7 +4,7 @@
     <groupId>org.podval.raspberrypi</groupId>
     <artifactId>gpio</artifactId>
     <name>Raspberry Pi GPIO Access</name>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <licenses>

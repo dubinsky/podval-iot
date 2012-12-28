@@ -42,9 +42,6 @@ final class Sht21(bus: I2cBus) extends I2cDevice(bus, 0x40) {
   
   def readMeasurement(command: Int, hold: Boolean) = {
     val status = write(Seq(command))
-    if (status != 0) {
-      // server.log("write status= " + status);
-    }
     
     if (hold == false) {
       // wait for conversion, 14 bits = 85ms

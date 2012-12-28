@@ -18,7 +18,7 @@ package org.podval.raspberrypi
 
 import com.sun.jna.{Native, Library}
 
-import java.io.{FileInputStream, FileOutputStream, RandomAccessFile, FileDescriptor => FD}
+import java.io.{FileInputStream, FileOutputStream, RandomAccessFile, FileDescriptor}
 
 import sun.misc.SharedSecrets
 
@@ -51,5 +51,5 @@ object Ioctl {
   def ioctl(fd: Int, command: Int, data: Int): Int = ioctl.ioctl(fd, command, data)
 
 
-  private def getFd(fd: FD) = SharedSecrets.getJavaIOFileDescriptorAccess.get(fd)
+  private def getFd(fd: FileDescriptor) = SharedSecrets.getJavaIOFileDescriptorAccess.get(fd)
 }

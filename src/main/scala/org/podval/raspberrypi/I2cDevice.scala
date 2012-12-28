@@ -27,7 +27,7 @@ class I2cDevice(bus: I2cBus, address: Int) {
   // bytes to a register
   // one byte to a register
 
-  final def write(data: Seq[Int]): Int = {
+  final def write(data: Seq[Int]) {
     bus.setSlaveAddress(address)
     bus.write(data)
   }

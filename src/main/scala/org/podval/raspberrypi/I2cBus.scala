@@ -16,26 +16,31 @@
 
 package org.podval.raspberrypi
 
+import java.io.RandomAccessFile
 
-final class I2cBus(bus: Int, fd: FileDescriptor) {
+
+final class I2cBus(bus: Int) {
 
   if (bus < 0) {
     throw new IllegalArgumentException("Invalid bus number: " + bus)
   }
 
 
-  def close = fd.close
+  private val file: RandomAccessFile = new RandomAccessFile(I2cBus.busDevice(bus), "rw")
+
+
+  def close = file.close
 
 
   override def toString: String = "i2c bus " + bus + " on " + I2cBus.busDevice(bus)
 
 
-  def write(data: Seq[Int]): Int = fd.write(data.map(_.asInstanceOf[Byte]).toArray)
+  def write(data: Seq[Int]) = file.write(data.map(_.asInstanceOf[Byte]).toArray)
 
 
   def read(length: Int): Seq[Byte] = {
     val buffer: Array[Byte] = new Array(length)
-    val result = fd.read(buffer)
+    val result = file.read(buffer)
     buffer.take(math.max(0, result))
   }
 
@@ -43,7 +48,7 @@ final class I2cBus(bus: Int, fd: FileDescriptor) {
   def setSlaveAddress(address: Int) {
     I2cBus.checkAddress(address)
 
-    val result = fd.ioctl(I2cBus.SET_SLAVE_ADDRESS, address)
+    val result = Ioctl.ioctl(file, I2cBus.SET_SLAVE_ADDRESS, address)
 
     val ok = result >= 0
 
@@ -76,7 +81,4 @@ object I2cBus {
   def checkAddress(address: Int) {
     if (address < 0 || address > 0xff) throw new IllegalArgumentException("Invalid i2c address " + address)
   }
-
-
-  def apply(clib: CLib, bus: Int): I2cBus = new I2cBus(bus, FileDescriptor(clib, busDevice(bus)))
 }

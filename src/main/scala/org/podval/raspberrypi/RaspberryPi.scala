@@ -25,13 +25,13 @@ object RaspberryPi {
   }
 
 
-  lazy val i2c0 = I2cBus(CLib.clib, 0)
+  val i2c0 = new I2cBus(0)
 
 
-  lazy val i2c1 = I2cBus(CLib.clib, 1)
+  val i2c1 = new I2cBus(1)
 
 
-  lazy val i2c = if (revision > 1) i2c1 else i2c0
+  val i2c = if (revision > 1) i2c1 else i2c0
 
 
   def main(args: Array[String]) {
