@@ -19,34 +19,40 @@ package org.podval.i2c
 import java.io.{FileInputStream, FileOutputStream, RandomAccessFile, FileDescriptor}
 
 
-object Ioctl {
-
-  def ioctl(file: FileInputStream, command: Int, data: Int): Int = ioctl(getFd(file.getFD), command, data)
-
-
-  def ioctl(file: FileOutputStream, command: Int, data: Int): Int = ioctl(getFd(file.getFD), command, data)
-
-
-  def ioctl(file: RandomAccessFile, command: Int, data: Int): Int = ioctl(getFd(file.getFD), command, data)
-
+/**
+ * See http://www.artima.com/weblogs/viewpost.jsp?thread=179766
+ */
+final class Ioctl(fileDescriptor: FileDescriptor) {
 
   import sun.misc.SharedSecrets
 
 
-  private def getFd(fd: FileDescriptor) = SharedSecrets.getJavaIOFileDescriptorAccess.get(fd)
+  private[this] val fd: Int = SharedSecrets.getJavaIOFileDescriptorAccess.get(fileDescriptor)
+
+
+  def ioctl(command: Int, data: Int): Int = Ioctl.library.ioctl(fd, command, data)
+}
+
+
+object Ioctl {
+
+  implicit def toIoctl(file: FileInputStream): Ioctl = new Ioctl(file.getFD)
+
+
+  implicit def toIoctl(file: FileOutputStream): Ioctl = new Ioctl(file.getFD)
+
+
+  implicit def toIoctl(file: RandomAccessFile): Ioctl = new Ioctl(file.getFD)
 
 
   import com.sun.jna.{Native, Library}
 
 
-  private trait Ioctl extends Library {
+  private trait CLib extends Library {
   
     def ioctl(fd: Int, command: Int, data: Int): Int
   }
 
 
-  private val ioctl: Ioctl = Native.loadLibrary("c", classOf[Ioctl]).asInstanceOf[Ioctl]
-
-
-  private def ioctl(fd: Int, command: Int, data: Int): Int = ioctl.ioctl(fd, command, data)
+  private val library: CLib = Native.loadLibrary("c", classOf[CLib]).asInstanceOf[CLib]
 }

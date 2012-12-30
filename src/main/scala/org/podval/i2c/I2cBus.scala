@@ -18,6 +18,8 @@ package org.podval.i2c
 
 import java.io.RandomAccessFile
 
+import Ioctl.toIoctl
+
 
 final class I2cBus(bus: Int) {
 
@@ -55,7 +57,7 @@ final class I2cBus(bus: Int) {
   def setSlaveAddress(address: Int) {
     I2cBus.checkAddress(address)
 
-    val result = Ioctl.ioctl(file, I2cBus.SET_SLAVE_ADDRESS, address)
+    val result = file.ioctl(I2cBus.SET_SLAVE_ADDRESS, address)
 
     val ok = result >= 0
 
