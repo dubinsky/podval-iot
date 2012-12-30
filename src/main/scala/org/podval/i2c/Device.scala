@@ -16,37 +16,40 @@
 
 package org.podval.i2c
 
-import java.io.RandomAccessFile
-
 import Ioctl.toIoctl
 
 
-final class I2cBus(bus: Int) {
+final class Device(val bus: Bus, val address: Int) {
 
-  if (bus < 0) {
-    throw new IllegalArgumentException("Invalid bus number: " + bus)
+  if (address < 0 || address > 0xff) throw new IllegalArgumentException("Invalid i2c address " + address)
+
+
+  def writeByte(data: Int) {
+    setSlaveAddress
+    file.write(data)
   }
 
 
-  private val file: RandomAccessFile = new RandomAccessFile(I2cBus.busDevice(bus), "rw")
+  def writeByte(reg: Int, data: Int) {
+    writeBytes(Seq(reg, data))
+  }
 
 
-  def close = file.close
+  def writeBytes(data: Seq[Int]) {
+    setSlaveAddress
+    file.write(data.map(_.asInstanceOf[Byte]).toArray)
+  }
 
 
-  override def toString: String = "i2c bus " + bus + " on " + I2cBus.busDevice(bus)
-
-
-  def writeByte(data: Int) = file.write(data.asInstanceOf[Byte])
-
-
-  def writeBytes(data: Seq[Int]) = file.write(data.map(_.asInstanceOf[Byte]).toArray)
-
-
-  def readByte = file.readByte
+  def readByte: Byte = {
+    setSlaveAddress
+    file.readByte
+  }
 
 
   def readBytes(length: Int): Seq[Byte] = {
+    setSlaveAddress
+
     val buffer: Array[Byte] = new Array(length)
     val result = file.read(buffer)
     // XXX: when length is right, there is no copying? Right?!
@@ -54,10 +57,11 @@ final class I2cBus(bus: Int) {
   }
 
 
-  def setSlaveAddress(address: Int) {
-    I2cBus.checkAddress(address)
+  private[this] def file = bus.file
 
-    val result = file.ioctl(I2cBus.SET_SLAVE_ADDRESS, address)
+
+  private[this] def setSlaveAddress {
+    val result = file.ioctl(Address.SET_SLAVE_ADDRESS, address)
 
     val ok = result >= 0
 
@@ -67,27 +71,15 @@ final class I2cBus(bus: Int) {
   }
 
 
-  def isPresent(address: Int): Boolean = {
-    setSlaveAddress(address)
-    val bytes = readBytes(address)
+  def isPresent: Boolean = {
+    setSlaveAddress
+    val bytes = readBytes(1)
     !bytes.isEmpty
   }
 }
 
 
-
-object I2cBus {
-
-  val busDevicePrefix = "/dev/i2c-"
-
-
+object Address {
+  
   val SET_SLAVE_ADDRESS = 0x0703
-
-
-  def busDevice(bus: Int): String = busDevicePrefix + bus
-
-
-  def checkAddress(address: Int) {
-    if (address < 0 || address > 0xff) throw new IllegalArgumentException("Invalid i2c address " + address)
-  }
 }

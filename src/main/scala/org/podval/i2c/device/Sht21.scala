@@ -16,10 +16,13 @@
 
 package org.podval.i2c.device
 
-import org.podval.i2c.{I2cBus, I2cDevice}
+import org.podval.i2c.{Bus, Device}
 
 
-final class Sht21(bus: I2cBus) extends I2cDevice(bus, 0x40) {
+final class Sht21(bus: Bus) {
+
+  val device = bus.device(0x40)
+
 
   def temperature: Float = convertTemperature(readMeasurement(0xf3, false))
   
@@ -43,14 +46,14 @@ final class Sht21(bus: I2cBus) extends I2cDevice(bus, 0x40) {
 
   
   def readMeasurement(command: Int, hold: Boolean) = {
-    val status = writeByte(command)
+    val status = device.writeByte(command)
     
     if (hold == false) {
       // wait for conversion, 14 bits = 85ms
       Thread.sleep(85)
     }
     
-    val bytes = readBytes(3)
+    val bytes = device.readBytes(3)
     // XXX: Signal failed read better!
     if (bytes.isEmpty) 0 else {
       val result = (bytes(0) << 8) | (bytes(1) & 0xfc)
@@ -63,7 +66,7 @@ final class Sht21(bus: I2cBus) extends I2cDevice(bus, 0x40) {
 
   
   def readUserRegister = {
-    writeByte(0xe7)
+    device.writeByte(0xe7)
     readByte
   }
 }

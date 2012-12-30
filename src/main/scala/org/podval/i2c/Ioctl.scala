@@ -19,6 +19,7 @@ package org.podval.i2c
 import java.io.{FileInputStream, FileOutputStream, RandomAccessFile, FileDescriptor}
 
 
+// XXX Split CLib out and lazify
 /**
  * See http://www.artima.com/weblogs/viewpost.jsp?thread=179766
  */

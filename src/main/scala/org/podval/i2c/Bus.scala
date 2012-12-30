@@ -16,35 +16,30 @@
 
 package org.podval.i2c
 
-
-class I2cDevice(bus: I2cBus, address: Int) {
-
-  I2cBus.checkAddress(address)
+import java.io.RandomAccessFile
 
 
-  final def writeByte(data: Int) {
-    bus.setSlaveAddress(address)
-    writeBytes(Seq(data))
+final class Bus(val number: Int) {
+
+  if (number < 0) {
+    throw new IllegalArgumentException("Invalid bus number: " + number)
   }
 
 
-  final def writeByte(reg: Int, data: Int) = writeBytes(Seq(reg, data))
+  val file: RandomAccessFile = new RandomAccessFile(busDevice, "rw")
 
 
-  final def writeBytes(data: Seq[Int]) {
-    bus.setSlaveAddress(address)
-    bus.writeBytes(data)
+  override def toString: String = "i2c bus " + number + " on " + busDevice
+
+
+  def busDevice: String = I2c.busDevicePrefix + number
+
+
+  def close = {
+    file.close
+    I2c.close(this)
   }
 
 
-  final def readByte: Byte = {
-    bus.setSlaveAddress(address)
-    bus.readByte
-  }
-
-
-  final def readBytes(length: Int): Seq[Byte] = {
-    bus.setSlaveAddress(address)
-    bus.readBytes(length)
-  }
+  def device(value: Int): Device = new Device(this, value)
 }

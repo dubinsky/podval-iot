@@ -16,18 +16,20 @@
 
 package org.podval.i2c.device
 
-import org.podval.i2c.{I2cBus, I2cDevice}
+import org.podval.i2c.Bus
 
 
 /**
  * Adafruit's HT16K33-base LED backpack.
  */
 // XXX: Encapsulate the underlying read/write: protected final - or containment?
-class LedBackpack(bus: I2cBus, number: Int) extends I2cDevice(bus, 0x70 + number) {
+class LedBackpack(bus: Bus, number: Int) {
 
   if (number < 0 || number > 7) {
     throw new IllegalArgumentException("Invalid LED backpack address: " + number)
   }
+
+  val device = bus.device(0x70 + number)
 
   val buffer = new Array[Int](8)
 
@@ -63,7 +65,7 @@ class LedBackpack(bus: I2cBus, number: Int) extends I2cDevice(bus, 0x70 + number
       bytes(2+i*2) = (buffer(i) >> 8) & 0xff
     }
 
-    writeBytes(bytes)
+    device.writeBytes(bytes)
   }
 
   def setBrightness(value: Int) {
@@ -87,7 +89,7 @@ class LedBackpack(bus: I2cBus, number: Int) extends I2cDevice(bus, 0x70 + number
   }
 
 
-  private[this] def writeByte0(reg: Int) = writeByte(reg, 0x00)
+  private[this] def writeByte0(reg: Int) = device.writeByte(reg, 0x00)
 }
 
 
