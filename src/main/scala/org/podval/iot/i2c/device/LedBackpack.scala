@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package org.podval.i2c.device
+package org.podval.iot.i2c.device
 
-import org.podval.i2c.Bus
+import org.podval.iot.i2c.I2c
 
 
 /**
  * Adafruit's HT16K33-base LED backpack.
  */
-// XXX: Encapsulate the underlying read/write: protected final - or containment?
-class LedBackpack(bus: Bus, number: Int) {
+class LedBackpack(bus: I2c#Bus, number: Int) {
 
   if (number < 0 || number > 7) {
     throw new IllegalArgumentException("Invalid LED backpack address: " + number)
@@ -48,15 +47,13 @@ class LedBackpack(bus: Bus, number: Int) {
 
 
   def clear {
-// XXX:   buffer.fill(0)
-
+    // XXX:   buffer.fill(0)
     for (i <- 0 until buffer.length) {
       buffer(i) = 0x00
     }
   }
 
 
-  // XXX: Introduce I2cDevice.writeInts(reg, Seq[Int])
   def update {
     val bytes = new Array[Int](1+buffer.length*2)
     bytes(0) = 0x00

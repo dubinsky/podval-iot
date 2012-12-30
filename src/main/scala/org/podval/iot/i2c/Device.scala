@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package org.podval.i2c
+package org.podval.iot.i2c
 
 import Ioctl.toIoctl
 
 
-final class Device(val bus: Bus, val address: Int) {
+final class Device(val bus: I2c#Bus, val address: Int) {
 
   if (address < 0 || address > 0xff) throw new IllegalArgumentException("Invalid i2c address " + address)
 

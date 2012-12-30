@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.podval.raspberrypi
+package org.podval.iot.raspberrypi
 
 
 class Gpio {

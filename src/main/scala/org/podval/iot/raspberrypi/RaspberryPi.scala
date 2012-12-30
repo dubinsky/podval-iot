@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package org.podval.raspberrypi
+package org.podval.iot.raspberrypi
 
-import org.podval.i2c.I2c
+import org.podval.iot.i2c.I2c
 
-import org.podval.i2c.device.{Sht21, SevenSegment}
+import org.podval.iot.i2c.device.{Sht21, SevenSegment}
 
 
 object RaspberryPi {
@@ -29,10 +29,13 @@ object RaspberryPi {
   }
 
 
-  val i2c0 = I2c.bus(0)
+  lazy val i2cController = new I2c
 
 
-  val i2c1 = I2c.bus(1)
+  val i2c0 = i2cController.bus(0)
+
+
+  val i2c1 = i2cController.bus(1)
 
 
   val i2c = if (revision > 1) i2c1 else i2c0

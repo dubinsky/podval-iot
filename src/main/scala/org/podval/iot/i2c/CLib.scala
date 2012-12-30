@@ -14,32 +14,20 @@
  * limitations under the License.
  */
 
-package org.podval.i2c
-
-import java.io.RandomAccessFile
+package org.podval.iot.i2c
 
 
-final class Bus(val number: Int) {
-
-  if (number < 0) {
-    throw new IllegalArgumentException("Invalid bus number: " + number)
-  }
+import com.sun.jna.{Native, Library}
 
 
-  val file: RandomAccessFile = new RandomAccessFile(busDevice, "rw")
+trait CLib extends Library {
+  
+  def ioctl(fd: Int, command: Int, data: Int): Int
+}
 
 
-  override def toString: String = "i2c bus " + number + " on " + busDevice
 
+object CLib {
 
-  def busDevice: String = I2c.busDevicePrefix + number
-
-
-  def close = {
-    file.close
-    I2c.close(this)
-  }
-
-
-  def device(value: Int): Device = new Device(this, value)
+  lazy val library: CLib = Native.loadLibrary("c", classOf[CLib]).asInstanceOf[CLib]
 }

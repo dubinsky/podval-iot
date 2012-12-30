@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package org.podval.i2c.device
+package org.podval.iot.i2c.device
 
-import org.podval.i2c.{Bus, Device}
+import org.podval.iot.i2c.I2c
 
 
-final class Sht21(bus: Bus) {
+final class Sht21(bus: I2c#Bus) {
 
   val device = bus.device(0x40)
 
