@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.podval.raspberrypi
+package org.podval.i2c
 
 
 class I2cDevice(bus: I2cBus, address: Int) {

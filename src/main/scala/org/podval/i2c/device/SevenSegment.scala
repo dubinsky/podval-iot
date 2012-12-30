@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package org.podval.raspberrypi
+package org.podval.i2c.device
+
+import org.podval.i2c.{I2cBus, I2cDevice}
 
 
 /**

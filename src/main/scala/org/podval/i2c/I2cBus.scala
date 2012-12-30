@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.podval.raspberrypi
+package org.podval.i2c
 
 import java.io.RandomAccessFile
 

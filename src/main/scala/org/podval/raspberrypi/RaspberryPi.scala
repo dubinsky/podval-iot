@@ -16,6 +16,10 @@
 
 package org.podval.raspberrypi
 
+import org.podval.i2c.{I2cBus, I2cDevice}
+
+import org.podval.i2c.device.{Sht21, SevenSegment}
+
 
 object RaspberryPi {
 
