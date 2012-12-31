@@ -16,7 +16,7 @@
 
 package org.podval.iot.raspberrypi
 
-import org.podval.iot.gpio.{Gpio, Direction, Input, Output, Pull, PullOff, PullDown, PullUp}
+import org.podval.iot.gpio.{Gpio, BitField, Direction, Input, Output, Pull, PullOff, PullDown, PullUp}
 
 
 /**
@@ -28,7 +28,7 @@ final class Bcm2835Gpio extends Gpio {
   override def memoryAddress = BCM2708_PERIPHERALS_BASE + 0x200000
 
 
-  override def memoryLength = 0xB1
+  override def memoryLength = 4*1024 //0xB1
 
   val fselField = new BitField(memory, 0x00, 3)
   val setField = new BitField(memory, 0x1c, 1)

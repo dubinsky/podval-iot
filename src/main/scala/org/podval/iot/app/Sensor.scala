@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package org.podval.iot.raspberrypi
+package org.podval.iot.app
 
+import org.podval.iot.raspberrypi.RaspberryPi
 import org.podval.iot.i2c.device.{Sht21, SevenSegment}
 
 

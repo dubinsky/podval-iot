@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.podval.iot.raspberrypi
+package org.podval.iot.gpio
 
 import java.nio.ByteBuffer
 
