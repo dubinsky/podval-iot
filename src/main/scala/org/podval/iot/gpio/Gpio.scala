@@ -19,7 +19,7 @@
  */
 package org.podval.iot.gpio
 
-import org.podval.iot.system.Memory
+import org.podval.iot.system.{Memory, MemoryMappedJna}
 
 
 abstract class Gpio {
@@ -30,8 +30,10 @@ abstract class Gpio {
   protected def memoryLength: Int
 
 
-  // XXX how to make this accessible only to Pin subclasses?
-  val memory = Memory.map(memoryAddress, memoryLength)
+  private[this] val memory: Memory = new MemoryMappedJna(memoryAddress, memoryLength)
+
+
+  protected def createField(offset: Int, length: Int) = new BitField(memory, offset, length)
 
 
   abstract class Pin(number: Int) {

@@ -16,11 +16,21 @@
 
 package org.podval.iot.system
 
+import java.io.{FileInputStream, FileOutputStream, RandomAccessFile, FileDescriptor}
 
-abstract class Memory(address: Long) {
-
-  def getInt(offset: Int): Int
+import sun.misc.SharedSecrets
 
 
-  def putInt(offset: Int, value: Int): Unit
+object Fd {
+
+  def get(fileDescriptor: FileDescriptor): Int = SharedSecrets.getJavaIOFileDescriptorAccess.get(fileDescriptor)
+
+
+  def get(file: FileInputStream): Int = get(file.getFD)
+
+
+  def get(file: FileOutputStream): Int = get(file.getFD)
+
+
+  def get(file: RandomAccessFile): Int = get(file.getFD)
 }

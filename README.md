@@ -29,6 +29,10 @@ turned out to be neccesary.
 * Adafruit Raspberry Pi Python [Code](https://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code.git) for
 the parts from Adafruit.
 
+* Chris Hatton's [note](http://www.chrishatton.org/archives/88) on GPIO port on the Raspberry Pi
+
+* Ilya's [note](http://highlyscalable.wordpress.com/2012/02/02/direct-memory-access-in-java/) on Unsafe
+
 * i2c-tools package (the source of python-smbus that Adafruit uses) as an example on how to use i2c-dev driver
 
 * i2c_bcm2708 driver

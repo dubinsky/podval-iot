@@ -16,11 +16,20 @@
 
 package org.podval.iot.system
 
-
-abstract class Memory(address: Long) {
-
-  def getInt(offset: Int): Int
+import sun.misc.Unsafe
 
 
-  def putInt(offset: Int, value: Int): Unit
+final class MemoryUnsafe(address: Long) extends Memory(address) {
+
+  private[this] val unsafe: Unsafe = {
+    val theUnsafeField = classOf[Unsafe].getDeclaredField("theUnsafe")
+    theUnsafeField.setAccessible(true)
+    theUnsafeField.get(null).asInstanceOf[Unsafe]
+  }
+
+
+  def getInt(offset: Int): Int = unsafe.getInt(address + offset)
+
+
+  def putInt(offset: Int, value: Int): Unit = unsafe.putInt(address + offset, value)
 }

@@ -16,11 +16,24 @@
 
 package org.podval.iot.system
 
+import java.io.RandomAccessFile
 
-abstract class Memory(address: Long) {
+import java.nio.MappedByteBuffer
+import java.nio.channels.FileChannel
 
-  def getInt(offset: Int): Int
+
+final class MemoryMapped(address: Long, length: Int) extends Memory(address) {
+
+  private[this] val buffer: MappedByteBuffer = {
+    val file = new RandomAccessFile("/dev/mem", "rws")
+    val result = file.getChannel.map(FileChannel.MapMode.READ_WRITE, address, length)
+    file.close
+    result
+  }
 
 
-  def putInt(offset: Int, value: Int): Unit
+  def getInt(offset: Int): Int = buffer.getInt(offset)
+
+
+  def putInt(offset: Int, value: Int): Unit = buffer.putInt(offset, value)
 }

@@ -24,16 +24,19 @@ import org.podval.iot.gpio.{Gpio, BitField, Direction, Input, Output, Pull, Pull
  */
 final class Bcm2835Gpio extends Gpio {
 
-  private[this] val BCM2708_PERIPHERALS_BASE = 0x20000000
-  override def memoryAddress = BCM2708_PERIPHERALS_BASE + 0x200000
+  private[this] val bcm2708PeripheralsBase: Long = 0x20000000
+  private[this] val bcm2708GpioOffset     : Long =   0x200000
+  
+  override def memoryAddress: Long = bcm2708PeripheralsBase + bcm2708GpioOffset
+  override def memoryLength = 0xB1
 
 
-  override def memoryLength = 4*1024 //0xB1
-
-  val fselField = new BitField(memory, 0x00, 3)
-  val setField = new BitField(memory, 0x1c, 1)
-  val clearField = new BitField(memory, 0x28, 1)
-  val levelField = new BitField(memory, 0x34, 1)
+  val fselField      = createField(0x00, 3)
+  val setField       = createField(0x1c, 1)
+  val clearField     = createField(0x28, 1)
+  val levelField     = createField(0x34, 1)
+  val pullField      = createField(0x94, 2)
+  val pullClockField = createField(0x98, 1)
 
   // XXX do "event" methods
 //  val EVENT_DETECT_OFFSET = 16  // 0x0040 / 4
@@ -42,9 +45,13 @@ final class Bcm2835Gpio extends Gpio {
 //  val HIGH_DETECT_OFFSET  = 25  // 0x0064 / 4
 //  val LOW_DETECT_OFFSET   = 28  // 0x0070 / 4
 
-  val pullField = new BitField(memory, 0x94, 2)
-  val pullClockField = new BitField(memory, 0x98, 1)
 
+  def fromPull(value: Pull): Int = value match {
+    case PullOff  => 0x0
+    case PullDown => 0x1
+    case PullUp   => 0x2
+  }
+  
 
   // XXX how can I define this class in a separate file?
   override def pin(number: Int): Pin = new Pin(number) {
@@ -61,12 +68,7 @@ final class Bcm2835Gpio extends Gpio {
     // XXX: do the "alt function" methods
 
     override def pull_=(value: Pull) = {
-      pullField.set(0, value match {
-          case PullOff => 0x0
-          case PullDown => 0x1
-          case PullUp => 0x2
-        }
-      ) 
+      pullField.set(0, fromPull(value))
       shortWait
       
       pullClockField.write(number, 0x1)

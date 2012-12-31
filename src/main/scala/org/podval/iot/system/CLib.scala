@@ -17,14 +17,19 @@
 package org.podval.iot.system
 
 
-import com.sun.jna.{Native, Library}
+import com.sun.jna.{Native, Library, Pointer, NativeLong}
 
 
 trait CLib extends Library {
   
   def ioctl(fd: Int, command: Int, data: Int): Int
-}
 
+
+  def mmap(address: Pointer, length: NativeLong, prot: Int, flags: Int, fd: Int, offset: NativeLong): Pointer
+  
+  
+  def munmap(address: Pointer, length: NativeLong): Int
+}
 
 
 object CLib {

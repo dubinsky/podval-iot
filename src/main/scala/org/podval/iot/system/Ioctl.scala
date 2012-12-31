@@ -16,18 +16,17 @@
 
 package org.podval.iot.system
 
-import java.io.{FileInputStream, FileOutputStream, RandomAccessFile, FileDescriptor}
+import java.io.{FileInputStream, FileOutputStream, RandomAccessFile}
 
 
 /**
  * See http://www.artima.com/weblogs/viewpost.jsp?thread=179766
  */
-final class Ioctl(fileDescriptor: FileDescriptor) {
+final class Ioctl(fd: Int) {
 
-  import sun.misc.SharedSecrets
-
-
-  private[this] val fd: Int = SharedSecrets.getJavaIOFileDescriptorAccess.get(fileDescriptor)
+  def this(file: FileInputStream) = this(Fd.get(file))
+  def this(file: FileOutputStream) = this(Fd.get(file))
+  def this(file: RandomAccessFile) = this(Fd.get(file))
 
 
   def ioctl(command: Int, data: Int): Int = CLib.library.ioctl(fd, command, data)
@@ -36,11 +35,11 @@ final class Ioctl(fileDescriptor: FileDescriptor) {
 
 object Ioctl {
 
-  implicit def toIoctl(file: FileInputStream): Ioctl = new Ioctl(file.getFD)
+  implicit def toIoctl(file: FileInputStream): Ioctl = new Ioctl(file)
 
 
-  implicit def toIoctl(file: FileOutputStream): Ioctl = new Ioctl(file.getFD)
+  implicit def toIoctl(file: FileOutputStream): Ioctl = new Ioctl(file)
 
 
-  implicit def toIoctl(file: RandomAccessFile): Ioctl = new Ioctl(file.getFD)
+  implicit def toIoctl(file: RandomAccessFile): Ioctl = new Ioctl(file)
 }

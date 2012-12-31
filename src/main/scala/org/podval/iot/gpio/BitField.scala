@@ -16,10 +16,10 @@
 
 package org.podval.iot.gpio
 
-import java.nio.ByteBuffer
+import org.podval.iot.system.Memory
 
 
-class BitField(buffer: ByteBuffer, base: Int, length: Int) {
+class BitField(memory: Memory, base: Int, length: Int) {
 
   val numInInt = 32 / length
   val mask = 0x7fffffff >> (31-length)
@@ -29,19 +29,19 @@ class BitField(buffer: ByteBuffer, base: Int, length: Int) {
 
 
   def get(number: Int): Int =
-    (buffer.getInt(offset(number)) >> shift(number)) & mask
+    (memory.getInt(offset(number)) >> shift(number)) & mask
 
 
   def set(number: Int, value: Int) = {
     val o = offset(number)
     val s = shift(number)
-    buffer.putInt(o, (buffer.getInt(o) & ~(mask<<s)) | ((value & mask) << s))
+    memory.putInt(o, (memory.getInt(o) & ~(mask<<s)) | ((value & mask) << s))
   }
 
 
   def write(number: Int, value: Int) = {
     val o = offset(number)
     val s = shift(number)
-    buffer.putInt(o, (value & mask) << s)
+    memory.putInt(o, (value & mask) << s)
   }
 }
