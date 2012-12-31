@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package org.podval.iot.raspberrypi
+package org.podval.iot.gpio
 
 
-class Gpio {
-
-}
+// XXX how to make these importable without enumerating them?
+sealed trait Direction
+case object Input extends Direction
+case object Output extends Direction

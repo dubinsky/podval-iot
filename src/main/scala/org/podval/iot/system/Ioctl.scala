@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.podval.iot.i2c
+package org.podval.iot.system
 
 import java.io.{FileInputStream, FileOutputStream, RandomAccessFile, FileDescriptor}
 

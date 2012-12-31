@@ -14,30 +14,26 @@
  * limitations under the License.
  */
 
-package org.podval.iot.raspberrypi
+package org.podval.iot.system
 
-import org.podval.iot.i2c.I2c
+import java.io.RandomAccessFile
+
+import java.nio.MappedByteBuffer
+import java.nio.channels.FileChannel
 
 
-final class RaspberryPi {
+object Memory {
 
-  lazy val revision: Int = {
-    // XXX: revision is available from /proc/cpuinfo after keyword "Revision"
-    2
+  def map(address: Long, length: Int): MappedByteBuffer = {
+    val file = new RandomAccessFile("/dev/mem", "rws")
+
+    val result = file.getChannel.map(
+      FileChannel.MapMode.READ_WRITE,
+      address,
+      length)
+
+    file.close
+
+    result
   }
-
-
-  lazy val i2cController = new I2c
-
-
-  def i2c0 = i2cController.bus(0)
-
-
-  def i2c1 = i2cController.bus(1)
-
-
-  def i2c = if (revision > 1) i2c1 else i2c0
-
-
-  lazy val gpio = new Bcm2835Gpio
 }

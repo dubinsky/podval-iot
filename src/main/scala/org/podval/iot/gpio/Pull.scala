@@ -14,30 +14,11 @@
  * limitations under the License.
  */
 
-package org.podval.iot.raspberrypi
-
-import org.podval.iot.i2c.I2c
+package org.podval.iot.gpio
 
 
-final class RaspberryPi {
-
-  lazy val revision: Int = {
-    // XXX: revision is available from /proc/cpuinfo after keyword "Revision"
-    2
-  }
-
-
-  lazy val i2cController = new I2c
-
-
-  def i2c0 = i2cController.bus(0)
-
-
-  def i2c1 = i2cController.bus(1)
-
-
-  def i2c = if (revision > 1) i2c1 else i2c0
-
-
-  lazy val gpio = new Bcm2835Gpio
-}
+// XXX how to make these importable without enumerating them?
+sealed trait Pull
+case object PullUp extends Pull
+case object PullDown extends Pull
+case object PullOff extends Pull

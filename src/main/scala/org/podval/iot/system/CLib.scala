@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.podval.iot.i2c
+package org.podval.iot.system
 
 
 import com.sun.jna.{Native, Library}

@@ -16,7 +16,7 @@
 
 package org.podval.iot.i2c
 
-import Ioctl.toIoctl
+import org.podval.iot.system.Ioctl.toIoctl
 
 
 final class Device(val bus: I2c#Bus, val address: Int) {
