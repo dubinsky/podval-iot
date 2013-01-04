@@ -18,25 +18,50 @@ package org.podval.iot.system
 
 import java.io.{RandomAccessFile, IOException}
 
-import com.sun.jna.{Pointer, NativeLong}
+import com.sun.jna.{Native, Pointer, NativeLong}
 
 
-class MemoryMappedJna(address: Long, length: Int) extends Memory(address) {
+/*
+ * XXX Native has get/set methods that can be used for random memory access,
+ * but they probably will crash just as Unsafe's ones.
+ * Also, I am not sure they are there in JNA 3.2.7 (version currently on Raspberry Pi) -
+ * even Native.malloc() isn't!
+ */
+class MemoryMappedJna(address: Long, length: Int, fixed: Boolean) extends Memory(address) {
 
   val PROT_READ  = 1
   val PROT_WRITE = 2
 
   val MAP_SHARED = 0x01
-  val MAO_FIXED  = 0x10
+  val MAP_FIXED  = 0x10
+
+  val pageSize = 4*1024 // XXX get from Unsafe?
 
   private[this] val pointer: Pointer = {
     val file = new RandomAccessFile("/dev/mem", "rws")
 
+    val pointer = if (!fixed) new Pointer(0) else {
+      var bufferSize: Long = length + (pageSize-1)
+      val buffer: Long =
+      // XXX malloc() appeared after JNA 3.2.7, which is on Raspberry Pi currently...
+      // Native.malloc(bufferSize)
+        CLib.library.malloc(new NativeLong(bufferSize)).longValue
+          
+      if (buffer == 0) {
+        throw new IOException("Failed to allocate buffer")
+      }
+      val pageOffset = buffer % pageSize
+      val mapBase: Long = if (pageOffset == 0) buffer else (buffer + pageSize - pageOffset)
+
+      new Pointer(mapBase)
+    }
+
+
     val result = CLib.library.mmap(
-      new Pointer(0),
+      pointer,
       new NativeLong(length),
       PROT_READ|PROT_WRITE,
-      MAP_SHARED /*|MAP_FIXED*/,
+      MAP_SHARED | (if (fixed) MAP_FIXED else 0x00),
       Fd.get(file),
       new NativeLong(address))
 

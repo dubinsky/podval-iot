@@ -25,6 +25,9 @@ trait CLib extends Library {
   def ioctl(fd: Int, command: Int, data: Int): Int
 
 
+  def malloc(length: NativeLong): NativeLong
+
+
   def mmap(address: Pointer, length: NativeLong, prot: Int, flags: Int, fd: Int, offset: NativeLong): Pointer
   
   

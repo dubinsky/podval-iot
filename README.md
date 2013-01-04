@@ -14,7 +14,7 @@ That includes:
 I used as sources of information and inspiration:
 
 * Official Broadcom [documentation](http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf)
-  on BCM835 peripherals (this is the chip inside Raspberry Pi)
+  on BCM2835 peripherals (this is the chip inside Raspberry Pi)
 
 * Tutorial on [RPi Low-Level Peripherals](http://elinux.org/RPi_Low-level_peripherals)
 

@@ -40,8 +40,10 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-<!--        <scala.version>2.10.0-RC5</scala.version>-->
+
+        <!-- Versions as they are on Raspberry Pi: -->
         <scala.version>2.9.2</scala.version>
+        <jna.version>3.2.7</jna.version>
     </properties>
 
     <repositories>
@@ -131,10 +133,17 @@
                 <scope>test</scope>
             </dependency>
 
+            <!-- JNA -->
             <dependency>
                 <groupId>net.java.dev.jna</groupId>
                 <artifactId>jna</artifactId>
-                <version>3.4.0</version>
+                <version>${jna.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.pi4j</groupId>
+                <artifactId>pi4j-core</artifactId>
+                <version>0.0.4</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -144,21 +153,6 @@
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
         </dependency>
-
-        <!--
-        <dependency>
-            <groupId>com.pi4j</groupId>
-            <artifactId>pi4j-core</artifactId>
-            <version>0.0.4-SNAPSHOT</version>
-        </dependency>
-        -->
-
-        <!--
-        <dependency>
-            <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_${scala.version}</artifactId>
-        </dependency>
-        -->
 
         <dependency>
             <groupId>net.java.dev.jna</groupId>

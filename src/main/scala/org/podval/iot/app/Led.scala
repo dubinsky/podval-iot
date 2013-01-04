@@ -24,12 +24,15 @@ object Led {
 
   def main(args: Array[String]) {
     val pi = new RaspberryPi
-    val pin = pi.gpio.pin(7)
-    pin.direction = Output
-
-    while (true) {
-      pin.level = !pin.level
-      Thread.sleep(1000)
+    for (i <- 0 to 52) {
+      println("pin " + i + " is " + pi.gpio.pin(i).level)
     }
+//    val pin = pi.gpio.pin(7)
+//    pin.direction = Output
+//
+//    while (true) {
+//      pin.level = !pin.level
+//      Thread.sleep(1000)
+//    }
   }
 }

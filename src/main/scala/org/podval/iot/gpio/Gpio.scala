@@ -30,7 +30,7 @@ abstract class Gpio {
   protected def memoryLength: Int
 
 
-  private[this] val memory: Memory = new MemoryMappedJna(memoryAddress, memoryLength)
+  private[this] val memory: Memory = new MemoryMappedJna(memoryAddress, memoryLength, true)
 
 
   protected def createField(offset: Int, length: Int) = new BitField(memory, offset, length)
