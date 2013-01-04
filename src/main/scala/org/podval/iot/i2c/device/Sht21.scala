@@ -16,10 +16,10 @@
 
 package org.podval.iot.i2c.device
 
-import org.podval.iot.i2c.I2c
+import org.podval.iot.i2c.Bus
 
 
-final class Sht21(bus: I2c#Bus) {
+final class Sht21(bus: Bus) {
 
   val device = bus.device(0x40)
 

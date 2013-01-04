@@ -16,13 +16,13 @@
 
 package org.podval.iot.i2c.device
 
-import org.podval.iot.i2c.I2c
+import org.podval.iot.i2c.Bus
 
 
 /**
  * Four-character, seven segment displays available from Adafruit.
  */
-final class SevenSegment(bus: I2c#Bus, number: Int = 0) extends LedBackpack(bus, number) {
+final class SevenSegment(bus: Bus, number: Int = 0) extends LedBackpack(bus, number) {
 
   // Sets a single decimal or hexademical value (0..9 and A..F)
   def writeDigit(charNumber: Int, value: Int, dot: Boolean = false) {

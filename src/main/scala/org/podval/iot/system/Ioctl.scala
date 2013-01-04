@@ -17,7 +17,9 @@
 package org.podval.iot.system
 
 import java.io.{FileInputStream, FileOutputStream, RandomAccessFile}
+import java.nio.Buffer
 
+import com.sun.jna.Structure
 
 /**
  * See http://www.artima.com/weblogs/viewpost.jsp?thread=179766
@@ -30,6 +32,9 @@ final class Ioctl(fd: Int) {
 
 
   def ioctl(command: Int, data: Int): Int = CLib.library.ioctl(fd, command, data)
+
+
+  def ioctl(command: Int, data: Structure): Int = CLib.library.ioctl(fd, command, data)
 }
 
 

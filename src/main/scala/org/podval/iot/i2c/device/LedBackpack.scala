@@ -16,13 +16,13 @@
 
 package org.podval.iot.i2c.device
 
-import org.podval.iot.i2c.I2c
+import org.podval.iot.i2c.Bus
 
 
 /**
  * Adafruit's HT16K33-base LED backpack.
  */
-class LedBackpack(bus: I2c#Bus, number: Int) {
+class LedBackpack(bus: Bus, number: Int) {
 
   if (number < 0 || number > 7) {
     throw new IllegalArgumentException("Invalid LED backpack address: " + number)

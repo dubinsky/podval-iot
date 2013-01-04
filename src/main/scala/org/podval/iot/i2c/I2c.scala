@@ -16,8 +16,6 @@
 
 package org.podval.iot.i2c
 
-import java.io.RandomAccessFile
-
 import scala.collection.mutable
 
 
@@ -28,48 +26,14 @@ final class I2c {
 
   def bus(number: Int): Bus = {
     if (number2bus.get(number).isEmpty) {
-      number2bus.put(number, new Bus(number))
+      number2bus.put(number, new Bus(this, number))
     }
 
     number2bus(number)
   }
 
 
-  final class Bus(val number: Int) {
-    
-    if (number < 0) {
-      throw new IllegalArgumentException("Invalid bus number: " + number)
-    }
-    
-    
-    val file: RandomAccessFile = new RandomAccessFile(busDevice, "rw")
-    
-    
-    override def toString: String = "i2c bus " + number + " on " + busDevice
-    
-    
-    def busDevice: String = I2c.busDevicePrefix + number
-    
-    
-    def close = {
-      file.close
-      number2bus.remove(number)
-    }
-    
-    
-    def device(value: Int): Device = new Device(this, value)
-
-
-// XXX scope Device inside; tighten accessibility of vals
-//    final class Device(val address: Int) {
-//
-//      if (address < 0 || address > 0xff) throw new IllegalArgumentException("Invalid i2c address " + address)
-//    }
+  def close(bus: Bus) {
+    number2bus.remove(bus.number)
   }
-}
-
-
-object I2c {
-  
-  val busDevicePrefix = "/dev/i2c-"
 }

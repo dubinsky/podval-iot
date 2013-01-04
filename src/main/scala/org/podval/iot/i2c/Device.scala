@@ -18,27 +18,12 @@ package org.podval.iot.i2c
 
 import org.podval.iot.system.Ioctl.toIoctl
 
+import java.io.IOException
 
-final class Device(val bus: I2c#Bus, val address: Int) {
+
+final class Device(val bus: Bus, val address: Int) {
 
   if (address < 0 || address > 0xff) throw new IllegalArgumentException("Invalid i2c address " + address)
-
-
-  def writeByte(data: Int) {
-    setSlaveAddress
-    file.write(data)
-  }
-
-
-  def writeByte(reg: Int, data: Int) {
-    writeBytes(Seq(reg, data))
-  }
-
-
-  def writeBytes(data: Seq[Int]) {
-    setSlaveAddress
-    file.write(data.map(_.asInstanceOf[Byte]).toArray)
-  }
 
 
   def readByte: Byte = {
@@ -47,7 +32,45 @@ final class Device(val bus: I2c#Bus, val address: Int) {
   }
 
 
+  def writeByte(data: Int) {
+    setSlaveAddress
+    file.writeByte(data)
+  }
+
+
+  def readShort: Short = {
+    setSlaveAddress
+    file.readShort
+  }
+
+
+  def writeShort(data: Int) {
+    setSlaveAddress
+    file.writeShort(data)
+  }
+
+
+//  def readByte(reg: Int): Byte = {
+//  XXX requires the "access" ioctl
+//  }
+
+
+  def writeByte(reg: Int, data: Int) = writeBytes(Seq(reg, data))
+
+
+//  def readShort(reg: Int): Byte = {
+//  XXX requires the "access" ioctl
+//  }
+
+
+  def writeShort(reg: Int, data: Int) = writeBytes(Seq(reg, (data >> 8), data))
+
+
   def readBytes(length: Int): Seq[Byte] = {
+    if (length < 1 || length > 32) {
+      throw new IllegalArgumentException("Length must be between 1 and 32")
+    }
+
     setSlaveAddress
 
     val buffer: Array[Byte] = new Array(length)
@@ -57,29 +80,116 @@ final class Device(val bus: I2c#Bus, val address: Int) {
   }
 
 
+  def writeBytes(data: Seq[Int]): Unit = {
+    setSlaveAddress
+    file.write(data.map(_.asInstanceOf[Byte]).toArray)
+  }
+
+
+//  def readBytes(reg: Int, length: Int): Seq[Byte] = {
+//  XXX requires the "access" ioctl
+//  }
+
+
+  def writeBytes(reg: Int, data: Seq[Int]): Unit = writeBytes(reg +: data)
+
+
+//union i2c_smbus_data {
+//	__u8 byte;
+//	__u16 word;
+//	__u8 block[I2C_SMBUS_BLOCK_MAX + 2]; /* block[0] is used for length */
+//	                                            /* and one more for PEC */
+//};
+//struct i2c_smbus_ioctl_data {
+//	char read_write;
+//	__u8 command;
+//	int size;
+//	union i2c_smbus_data *data;
+//};
+//#define I2C_SMBUS	0x0720	/* SMBus-level access */
+//
+///* smbus_access read or write markers */
+//#define I2C_SMBUS_READ	1
+//#define I2C_SMBUS_WRITE	0
+//
+///* SMBus transaction types (size parameter in the above functions) 
+//   Note: these no longer correspond to the (arbitrary) PIIX4 internal codes! */
+//#define I2C_SMBUS_QUICK		    0
+//#define I2C_SMBUS_BYTE		    1
+//#define I2C_SMBUS_BYTE_DATA	    2 
+//#define I2C_SMBUS_WORD_DATA	    3
+//#define I2C_SMBUS_PROC_CALL	    4
+//#define I2C_SMBUS_BLOCK_DATA	    5
+//#define I2C_SMBUS_I2C_BLOCK_BROKEN  6
+//#define I2C_SMBUS_BLOCK_PROC_CALL   7		/* SMBus 2.0 */
+//#define I2C_SMBUS_I2C_BLOCK_DATA    8
+//
+//static inline __s32 i2c_smbus_access(int file, char read_write, __u8 command, 
+//                                     int size, union i2c_smbus_data *data)
+//{
+//	struct i2c_smbus_ioctl_data args;
+//
+//	args.read_write = read_write;
+//	args.command = command;
+//	args.size = size;
+//	args.data = data;
+//	return ioctl(file,I2C_SMBUS,&args);
+//}
+
+
   private[this] def file = bus.file
 
 
   private[this] def setSlaveAddress {
-    val result = file.ioctl(Address.SET_SLAVE_ADDRESS, address)
+    val result = file.ioctl(Device.SET_SLAVE_ADDRESS, address)
 
     val ok = result >= 0
 
+    // XXX: EBUSY (16) should be reported differently...
+
     if (!ok) {
-      throw new NoSuchElementException("No device at address " + address + " on " + this)
+      throw new IOException("No device at address " + address + " on " + this)
     }
   }
 
 
-  def isPresent: Boolean = {
-    setSlaveAddress
-    val bytes = readBytes(1)
-    !bytes.isEmpty
+  def isPresent(mode: Device.Mode): Boolean = {
+    // XXX: If setSlaveAddress fails with EBUSY, print "UU "; with anything else - abort!
+
+    try {
+      mode match {
+//      case Device.Quick => 
+//        // This is known to corrupt the Atmel AT24RF08 EEPROM
+//        writeQuick(I2C_SMBUS_WRITE)
+      case Device.Read =>
+        // This is known to lock SMBus on various write-only chips (mainly clock chips)
+        readByte
+      case Device.Default =>
+//        if ((0x30 <= device.address && device.address <= 0x37) || (0x50 <= device.address && device.address <= 0x5F))
+        readByte
+//        else
+//        device.writeQuick(I2C_SMBUS_WRITE)
+      }
+
+      true
+
+    } catch {
+      case e: Exception => false
+    }
   }
 }
 
 
-object Address {
-  
+object Device {
+
+  sealed trait Mode
+  case object Quick extends Mode
+  case object Read extends Mode
+  case object Default extends Mode
+
+
+  val blockMax = 32
+
+
   val SET_SLAVE_ADDRESS = 0x0703
 }

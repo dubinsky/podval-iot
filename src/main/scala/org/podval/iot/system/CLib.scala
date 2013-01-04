@@ -16,13 +16,15 @@
 
 package org.podval.iot.system
 
-
-import com.sun.jna.{Native, Library, Pointer, NativeLong}
+import com.sun.jna.{Native, Library, Pointer, NativeLong, Structure}
 
 
 trait CLib extends Library {
   
   def ioctl(fd: Int, command: Int, data: Int): Int
+
+
+  def ioctl(fd: Int, command: Int, data: Structure): Int
 
 
   def malloc(length: NativeLong): NativeLong
