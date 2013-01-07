@@ -23,6 +23,7 @@ import java.io.IOException
 import com.sun.jna.Structure
 
 
+// XXX rename Address?
 final class Device(val bus: Bus, val address: Int) {
 
   if (address < 0 || address > 0xff) throw new IllegalArgumentException("Invalid i2c address " + address)
@@ -136,29 +137,34 @@ final class Device(val bus: Bus, val address: Int) {
   private[this] def file = bus.file
 
 
-  private[this] def setSlaveAddress {
+  def setSlaveAddress {
     val result = file.ioctl(Device.SET_SLAVE_ADDRESS, address)
-
-    val ok = result >= 0
 
     // XXX: EBUSY (16) should be reported differently...
 
-    if (!ok) {
-      throw new IOException("No device at address " + address + " on " + this)
+    if (result < 0) {
+      if (result == Device.EBUSY) {
+        throw new IllegalStateException("Device is busy " + this)
+      } else {
+        throw new IOException("Failed to set slave address for " + this)
+      }
     }
   }
+
+
+  override def toString = "address " + address + " on bus " + bus
 }
 
 
-final class IoctlData extends Structure {
+class IoctlData extends Structure {
 
-  final static class ByReference extends IoctlData with Structure.ByReference {}
-
-  var readWrite: Char
-  var command: Byte
-  var size: Int
+  var readWrite: Char = _
+  var command: Byte = _
+  var siz: Int = _
 //	union i2c_smbus_data *data;
 }
+
+final class IoctlDataByReference extends IoctlData with Structure.ByReference {}
 
 
 object Device {
@@ -167,4 +173,7 @@ object Device {
 
 
   val SET_SLAVE_ADDRESS = 0x0703
+
+
+  val EBUSY = -16
 }
