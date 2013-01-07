@@ -20,6 +20,8 @@ import org.podval.iot.system.Ioctl.toIoctl
 
 import java.io.IOException
 
+import com.sun.jna.Structure
+
 
 final class Device(val bus: Bus, val address: Int) {
 
@@ -100,12 +102,6 @@ final class Device(val bus: Bus, val address: Int) {
 //	__u8 block[I2C_SMBUS_BLOCK_MAX + 2]; /* block[0] is used for length */
 //	                                            /* and one more for PEC */
 //};
-//struct i2c_smbus_ioctl_data {
-//	char read_write;
-//	__u8 command;
-//	int size;
-//	union i2c_smbus_data *data;
-//};
 //#define I2C_SMBUS	0x0720	/* SMBus-level access */
 //
 ///* smbus_access read or write markers */
@@ -151,42 +147,21 @@ final class Device(val bus: Bus, val address: Int) {
       throw new IOException("No device at address " + address + " on " + this)
     }
   }
+}
 
 
-  def isPresent(mode: Device.Mode): Boolean = {
-    // XXX: If setSlaveAddress fails with EBUSY, print "UU "; with anything else - abort!
+final class IoctlData extends Structure {
 
-    try {
-      mode match {
-//      case Device.Quick => 
-//        // This is known to corrupt the Atmel AT24RF08 EEPROM
-//        writeQuick(I2C_SMBUS_WRITE)
-      case Device.Read =>
-        // This is known to lock SMBus on various write-only chips (mainly clock chips)
-        readByte
-      case Device.Default =>
-//        if ((0x30 <= device.address && device.address <= 0x37) || (0x50 <= device.address && device.address <= 0x5F))
-        readByte
-//        else
-//        device.writeQuick(I2C_SMBUS_WRITE)
-      }
+  final static class ByReference extends IoctlData with Structure.ByReference {}
 
-      true
-
-    } catch {
-      case e: Exception => false
-    }
-  }
+  var readWrite: Char
+  var command: Byte
+  var size: Int
+//	union i2c_smbus_data *data;
 }
 
 
 object Device {
-
-  sealed trait Mode
-  case object Quick extends Mode
-  case object Read extends Mode
-  case object Default extends Mode
-
 
   val blockMax = 32
 
