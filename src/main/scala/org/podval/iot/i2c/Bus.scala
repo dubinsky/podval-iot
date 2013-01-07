@@ -35,7 +35,7 @@ final class Bus(val i2c: I2c, val number: Int) {
   val file: RandomAccessFile = new RandomAccessFile(busDevice, "rw")
   
   
-  override def toString: String = "i2c bus " + number + " on " + busDevice
+  override def toString: String = "bus " + number + " (" + busDevice + ")"
   
   
   def busDevice: String = Bus.devicePrefix + number

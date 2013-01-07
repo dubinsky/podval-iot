@@ -140,8 +140,6 @@ final class Device(val bus: Bus, val address: Int) {
   def setSlaveAddress {
     val result = file.ioctl(Device.SET_SLAVE_ADDRESS, address)
 
-    // XXX: EBUSY (16) should be reported differently...
-
     if (result < 0) {
       if (result == Device.EBUSY) {
         throw new IllegalStateException("Device is busy " + this)
@@ -152,7 +150,7 @@ final class Device(val bus: Bus, val address: Int) {
   }
 
 
-  override def toString = "address " + address + " on bus " + bus
+  override def toString = "address " + address + " on " + bus
 }
 
 

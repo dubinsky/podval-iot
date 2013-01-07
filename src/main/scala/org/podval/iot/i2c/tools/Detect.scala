@@ -46,6 +46,7 @@ final class Detect(bus: Bus, mode: Detect.Mode, first: Int, last: Int) {
 
 
   def status(device: Device): Detect.Status = {
+    println("Scanning " + device)
     try {
       device.setSlaveAddress
       
