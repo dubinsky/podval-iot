@@ -19,47 +19,27 @@
  */
 package org.podval.iot.gpio
 
-import org.podval.iot.system.{Memory, MemoryMappedJna}
-
 
 abstract class Gpio {
 
-  protected def memoryAddress: Long
-
-
-  protected def memoryLength: Int
-
-
-  private[this] val memory: Memory = new MemoryMappedJna(memoryAddress, memoryLength, true)
-
-
-  protected def createField(offset: Int, length: Int) = new BitField(memory, offset, length)
-
-
-  abstract class Pin(number: Int) {
+  def pin(number: Int): Pin = {
     if (number < 0 || number >= numPins) {
       throw new IllegalArgumentException("Invalid pin number " + number)
     }
 
-    
-    def numPins: Int
+    if (pins(number) == null) {
+      pins(number) = createPin(number)
+    }
 
-
-    def direction_=(value: Direction): Unit
-
-
-    def direction: Direction
-
-
-    def pull_=(value: Pull): Unit
-
-
-    def level_=(value: Boolean): Unit
-
-
-    def level: Boolean
+    pins(number)
   }
 
 
-  def pin(number: Int): Pin
+  val numPins: Int
+
+
+  protected def createPin(number: Int): Pin
+
+
+  private[this] val pins: Array[Pin] = new Array[Pin](numPins)
 }

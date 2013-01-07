@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Podval Group.
+ * Copyright 2013 Podval Group.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,19 @@
 package org.podval.iot.gpio
 
 
-// XXX how to make these importable without enumerating them?
-sealed trait Direction
-case object Input extends Direction
-case object Output extends Direction
-case object Pwm extends Direction
+abstract class Pin(number: Int) {
+  
+  def direction_=(value: Direction): Unit
+  
+  
+  def direction: Direction
+  
+  
+  def pull_=(value: Pull): Unit
+  
+  
+  def level_=(value: Boolean): Unit
+  
+  
+  def level: Boolean
+}

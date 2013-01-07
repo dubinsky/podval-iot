@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Podval Group.
+ * Copyright 2013 Podval Group.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,14 @@
 
 package org.podval.iot.gpio
 
+import org.podval.iot.system.Memory
 
-// XXX how to make these importable without enumerating them?
-sealed trait Direction
-case object Input extends Direction
-case object Output extends Direction
-case object Pwm extends Direction
+
+/**
+ * Memory-mapped interface to the GPIO functionality.
+ */
+
+abstract class GpioMemory(memory: Memory) extends Gpio {
+
+  protected def createField(offset: Int, length: Int) = new BitField(memory, offset, length)
+}

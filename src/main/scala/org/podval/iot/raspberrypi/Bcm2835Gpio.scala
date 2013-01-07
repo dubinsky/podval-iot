@@ -16,20 +16,15 @@
 
 package org.podval.iot.raspberrypi
 
-import org.podval.iot.gpio.{Gpio, BitField, Direction, Input, Output, Pull, PullOff, PullDown, PullUp}
+import org.podval.iot.gpio.{Pin, GpioMemory, BitField, Direction, Input, Output, Pull, PullOff, PullDown, PullUp}
+
+import org.podval.iot.system.MemoryMappedJna
 
 
 /**
  * Inspired by Ben Croston's RPi.GPIO (http://pypi.python.org/pypi/RPi.GPIO).
  */
-final class Bcm2835Gpio extends Gpio {
-
-  private[this] val bcm2708PeripheralsBase: Long = 0x20000000
-  private[this] val bcm2708GpioOffset     : Long =   0x200000
-  
-  override def memoryAddress: Long = bcm2708PeripheralsBase + bcm2708GpioOffset
-  override def memoryLength = 0xB1
-
+final class Bcm2835Gpio extends GpioMemory(new MemoryMappedJna(Bcm2835Gpio.memoryAddress, Bcm2835Gpio.memoryLength, true)) {
 
   val fselField      = createField(0x00, 3)
   val setField       = createField(0x1c, 1)
@@ -53,11 +48,11 @@ final class Bcm2835Gpio extends Gpio {
   }
   
 
+  override val numPins = 54
+
+
   // XXX how can I define this class in a separate file?
-  override def pin(number: Int): Pin = new Pin(number) {
-
-    override def numPins = 54
-
+  override protected def createPin(number: Int): Pin = new Pin(number) {
 
     override def direction_=(value: Direction) = fselField.set(number, if (value == Output) 1 else 0)
 
@@ -93,4 +88,13 @@ final class Bcm2835Gpio extends Gpio {
 
     // XXX do interrupts
   }
+}
+
+
+object Bcm2835Gpio {
+  
+  val bcm2708PeripheralsBase: Long = 0x20000000
+  val bcm2708GpioOffset     : Long =   0x200000
+  val memoryAddress: Long = bcm2708PeripheralsBase + bcm2708GpioOffset
+  val memoryLength = 0xB1
 }
