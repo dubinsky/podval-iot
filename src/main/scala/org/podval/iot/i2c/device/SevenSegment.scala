@@ -24,32 +24,80 @@ import org.podval.iot.i2c.Bus
  */
 final class SevenSegment(bus: Bus, number: Int = 0) extends LedBackpack(bus, number) {
 
-  // Sets a single decimal or hexademical value (0..9 and A..F)
-  def writeDigit(charNumber: Int, value: Int, dot: Boolean = false) {
-    if (charNumber < 0 || charNumber > 7) {
-      throw new IllegalArgumentException("Invalid character number: " + charNumber)
-    }
+  def digit0_=(value: Int) = writeDigit(0, value)
+  private[this] def digit0: Unit = {}
 
+  def dot0_=(value: Boolean) = writeDot(0, value)
+  private[this] def dot0: Unit = {}
+
+
+  def digit1_=(value: Int) = writeDigit(1, value)
+  private[this] def digit1: Unit = {}
+
+  def dot1_=(value: Boolean) = writeDot(1, value)
+  private[this] def dot1: Unit = {}
+
+
+  def digit2_=(value: Int) = writeDigit(3, value)
+  private[this] def digit2: Unit = {}
+
+  def dot2_=(value: Boolean) = writeDot(3, value)
+  private[this] def dot2: Unit = {}
+
+
+  def digit3_=(value: Int) = writeDigit(4, value)
+  private[this] def digit3: Unit = {}
+
+  def dot3_=(value: Boolean) = writeDot(4, value)
+  private[this] def dot3: Unit = {}
+
+
+  def left_=(value: Int) = {
+    digit0 = value / 10
+    digit1 = value % 10
+  }
+  def left: Unit = {}
+
+
+  def leftDot_=(value: Boolean) = dot1 = value
+  def leftDot: Unit = {}
+
+
+  def right_=(value: Int) = {
+    digit2 = value / 10
+    digit3 = value % 10
+  }
+  def right: Unit = {}
+
+
+  def rightDot_=(value: Boolean) = dot3 = value
+  def rightDot: Unit = {}
+
+
+  // Sets a single decimal or hexademical value (0..9 and A..F)
+  private[this] def writeDigit(charNumber: Int, value: Int) {
     if (value < 0 || value > 0xf) {
       throw new IllegalArgumentException("Invalid value: " + value)
     }
 
     // Set the appropriate digit
-    buffer(charNumber) = SevenSegment.Digits(value) | (if (dot) 0x80 else 0x00)
-
-    // Update
-    update
+    buffer(charNumber) = SevenSegment.Digits(value)
   }
 
-
+  
+  private[this] def writeDot(charNumber: Int, value: Boolean) {
+    buffer(charNumber) = (buffer(charNumber) & ~0x80) | (if (value) 0x80 else 0x00)
+  }
+    
+  // 
   // Enables or disables the colon character
   // Warning: This function assumes that the colon is character '2',
   // which is the case on 4 char displays, but may need to be modified
   // if another display type is used
-  def setColon(value: Boolean = true) {
+  def colon_=(value: Boolean = true) {
     buffer(2) = if (value) 0xffff else 0
-    update
   }
+  def colon: Unit = {}
 }
 
 

@@ -18,6 +18,7 @@ package org.podval.iot.i2c
 
 import org.podval.iot.system.Ioctl.toIoctl
 
+import java.nio.ByteBuffer
 import java.io.IOException
 
 import com.sun.jna.Structure
@@ -97,12 +98,6 @@ final class Device(val bus: Bus, val address: Int) {
   def writeBytes(reg: Int, data: Seq[Int]): Unit = writeBytes(reg +: data)
 
 
-//union i2c_smbus_data {
-//	__u8 byte;
-//	__u16 word;
-//	__u8 block[I2C_SMBUS_BLOCK_MAX + 2]; /* block[0] is used for length */
-//	                                            /* and one more for PEC */
-//};
 //#define I2C_SMBUS	0x0720	/* SMBus-level access */
 //
 ///* smbus_access read or write markers */
@@ -120,7 +115,11 @@ final class Device(val bus: Bus, val address: Int) {
 //#define I2C_SMBUS_I2C_BLOCK_BROKEN  6
 //#define I2C_SMBUS_BLOCK_PROC_CALL   7		/* SMBus 2.0 */
 //#define I2C_SMBUS_I2C_BLOCK_DATA    8
-//
+
+//  private[this] val ioctlData = new IoctlData
+
+
+//  def access(readWrite: Char, command: Byte, size: Int, )
 //static inline __s32 i2c_smbus_access(int file, char read_write, __u8 command, 
 //                                     int size, union i2c_smbus_data *data)
 //{
@@ -154,15 +153,22 @@ final class Device(val bus: Bus, val address: Int) {
 }
 
 
-class IoctlData extends Structure {
+//class IoctlData extends Structure {
+//
+//  var readWrite: Char = _
+//  var command: Byte = _
+//  var siz: Int = _
+////union i2c_smbus_dtaa {
+////	__u8 byte;
+////	__u16 word;
+////	__u8 block[I2C_SMBUS_BLOCK_MAX + 2]; /* block[0] is used for length */
+////	                                            /* and one more for PEC */
+////};
+////	union i2c_smbus_data *data;
+//  val buffer: ByteBuffer = ByteBuffer.allocate(Device.blockMax+2)
+//}
 
-  var readWrite: Char = _
-  var command: Byte = _
-  var siz: Int = _
-//	union i2c_smbus_data *data;
-}
-
-final class IoctlDataByReference extends IoctlData with Structure.ByReference {}
+//final class IoctlDataByReference extends IoctlData with Structure.ByReference {}
 
 
 object Device {
