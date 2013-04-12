@@ -27,16 +27,16 @@ import org.podval.iot.i2c.Bus
 // XXX conversions are wrong!!!
 final class Mpl115a2(bus: Bus) {
 
-  val device = bus.device(0x60)
+  val address = bus.address(0x60)
 
   // Gets the factory-set coefficients for this particular sensor
-  device.writeByte(Mpl115a2.a0Coeff)
+  address.writeByte(Mpl115a2.a0Coeff)
 
   // device.request(8)// XXX
-  val a0 : Float = device.readShort.toFloat / 8
-  val b1 : Float = device.readShort.toFloat / 8192
-  val b2 : Float = device.readShort.toFloat / 16384
-  val c12: Float = (((device.readByte.toShort << 8) | (device.readByte >> 2)).toFloat / 4194304.0).toFloat
+  val a0 : Float = address.readShort.toFloat / 8
+  val b1 : Float = address.readShort.toFloat / 8192
+  val b2 : Float = address.readShort.toFloat / 16384
+  val c12: Float = (((address.readByte.toShort << 8) | (address.readByte >> 2)).toFloat / 4194304.0).toFloat
 
 
   // Pressure in kPa
@@ -49,14 +49,14 @@ final class Mpl115a2(bus: Bus) {
 
   def reading: (Float, Float) = {
     // Get raw pressure and temperature settings
-    device.writeByte(Mpl115a2.startConversion, 0x00)
+    address.writeByte(Mpl115a2.startConversion, 0x00)
 
     // Wait a bit for the conversion to complete (3ms max)
     Thread.sleep(5)
 
-    device.writeByte(Mpl115a2.pressure)
+    address.writeByte(Mpl115a2.pressure)
 
-    def readMeasurement: Int = (device.readByte.toShort << 8) | (device.readByte >> 6)
+    def readMeasurement: Int = (address.readByte.toShort << 8) | (address.readByte >> 6)
 
     // device.request(4)// XXX
     val pressureRaw = readMeasurement

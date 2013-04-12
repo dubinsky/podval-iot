@@ -99,10 +99,12 @@
                             <arg>-explaintypes</arg>
                             <!--<arg>-feature</arg>-->
                         </args>
+                        <!--
                         <javacArgs>
                             <javacArg>-Xlint:unchecked</javacArg>
                             <javacArg>-Xlint:deprecation</javacArg>
                         </javacArgs>
+                        -->
                     </configuration>
                 </plugin>
             </plugins>

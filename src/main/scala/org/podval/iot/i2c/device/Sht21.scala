@@ -21,7 +21,7 @@ import org.podval.iot.i2c.Bus
 
 final class Sht21(bus: Bus) {
 
-  val device = bus.device(0x40)
+  val address = bus.address(0x40)
 
 
   def temperature: Float = convertTemperature(readMeasurement(0xf3, false))
@@ -46,14 +46,14 @@ final class Sht21(bus: Bus) {
 
   
   def readMeasurement(command: Int, hold: Boolean) = {
-    val status = device.writeByte(command)
+    val status = address.writeByte(command)
     
     if (hold == false) {
       // wait for conversion, 14 bits = 85ms
       Thread.sleep(85)
     }
     
-    val bytes = device.readBytes(3)
+    val bytes = address.readBytes(3)
     // XXX: Signal failed read better!
     if (bytes.isEmpty) 0 else {
       val result = (bytes(0) << 8) | (bytes(1) & 0xfc)
@@ -66,7 +66,7 @@ final class Sht21(bus: Bus) {
 
   
   def readUserRegister = {
-    device.writeByte(0xe7)
+    address.writeByte(0xe7)
     readByte
   }
 }

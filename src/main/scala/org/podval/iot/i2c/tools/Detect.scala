@@ -16,14 +16,14 @@
 
 package org.podval.iot.i2c.tools
 
-import org.podval.iot.i2c.{I2c, Bus, Device}
+import org.podval.iot.i2c.{I2c, Bus, Address}
 
 
 final class Detect(bus: Bus, mode: Detect.Mode, first: Int, last: Int) {
   
   def scan {
     val statuses =
-      Map() ++ (for (address <- first to last) yield (address -> status(bus.device(address))))
+      Map() ++ (for (address <- first to last) yield (address -> status(bus.address(address))))
 
     println("     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f")
 
@@ -45,14 +45,14 @@ final class Detect(bus: Bus, mode: Detect.Mode, first: Int, last: Int) {
   }
 
 
-  def status(device: Device): Detect.Status = {
-    println("Scanning " + device)
+  def status(address: Address): Detect.Status = {
+    println("Scanning " + address)
     try {
-      device.setSlaveAddress
+      address.setSlaveAddress
       
       try {
         mode match {
-//      case Device.Quick => 
+//      case Address.Quick =>
 //        // This is known to corrupt the Atmel AT24RF08 EEPROM
 //        writeQuick(I2C_SMBUS_WRITE)
           case Detect.Read =>

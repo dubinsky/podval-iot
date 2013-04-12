@@ -28,7 +28,7 @@ class LedBackpack(bus: Bus, number: Int) {
     throw new IllegalArgumentException("Invalid LED backpack address: " + number)
   }
 
-  val device = bus.device(0x70 + number)
+  val address = bus.address(0x70 + number)
 
   val buffer = new Array[Int](8)
 
@@ -62,7 +62,7 @@ class LedBackpack(bus: Bus, number: Int) {
       bytes(2+i*2) = (buffer(i) >> 8) & 0xff
     }
 
-    device.writeBytes(bytes)
+    address.writeBytes(bytes)
   }
 
   def setBrightness(value: Int) {
@@ -86,7 +86,7 @@ class LedBackpack(bus: Bus, number: Int) {
   }
 
 
-  private[this] def writeByte0(reg: Int) = device.writeByte(reg, 0x00)
+  private[this] def writeByte0(reg: Int) = address.writeByte(reg, 0x00)
 }
 
 
