@@ -19,10 +19,22 @@ package org.podval.iot.i2c
 import com.sun.jna.Structure
 
 
-class IoctlData extends Structure {
+final class IoctlData extends Structure {
   var readWrite: Byte = _ // char? (=signed byte?)
   var command: Byte = _
   var siz: Int = _
-  // pointer to structure
+  // pointer to union... or just put an array/buffer here, and add methods to set/get byte, word etc...
   var data: AccessData = new AccessData
+}
+
+
+import com.sun.jna.Union
+
+
+final class AccessData extends Union {
+  var byte: Byte = _
+  var word: Short = _
+  // array itself - not a pointer
+  // ByteBuffer?
+  var block: Array[Byte] = _ // new Array[Byte](Address.blockMax + 2) /* block[0] is used for length and one more for PEC */
 }
