@@ -28,8 +28,6 @@ final class Address(val bus: Bus, val address: Int) {
   def register(value: Int): Register = new Register(this, value)
 
 
-  // XXX Introduce "Register"?
-
   def writeQuick(data: Int) = bus.writeQuick(address, data)
   def readByte: Int = bus.readByte(address)
   def writeByte(data: Int) = bus.writeByte(address, data)
@@ -41,15 +39,15 @@ final class Address(val bus: Bus, val address: Int) {
   def readBlockData(command: Int): Seq[Byte] = bus.readBlockData(address, command)
   def writeBlockData(command: Int, data: Seq[Int]) = bus.writeBlockData(address, command, data)
 
-  def setSlaveAddress: Unit = bus.setSlaveAddress(address)
-
   def readByteSimple: Byte = bus.readByteSimple(address)
   def writeByteSimple(data: Int) = bus.writeByteSimple(address, data)
   def readShort: Short = bus.readShort(address)
   def writeShort(data: Int) = bus.writeShort(address, data)
   def writeByteSimple(register: Int, data: Int) = bus.writeByteSimple(address, register, data)
   def writeShort(register: Int, data: Int) = bus.writeShort(address, register, data)
-  def readBytes(length: Int): Seq[Byte] = bus.readBytes(address, length)
-  def writeBytes(data: Seq[Int]): Unit = bus.writeBytes(address, data)
   def writeBytes(register: Int, data: Seq[Int]): Unit = bus.writeBytes(address, register, data)
+  def writeBytes(data: Seq[Int]): Unit = bus.writeBytes(address, data)
+  def readBytes(length: Int): Seq[Byte] = bus.readBytes(address, length)
+
+  def setSlaveAddress: Unit = bus.setSlaveAddress(address)
 }

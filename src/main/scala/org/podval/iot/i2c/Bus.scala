@@ -67,17 +67,17 @@ final class Bus(val i2c: I2c, val number: Int) {
   def readBlockData(address: Int, command: Int): Seq[Byte] = I2c.readBlockData(fd, address, command)
   def writeBlockData(address: Int, command: Int, data: Seq[Int]) = I2c.writeBlockData(fd, address, command, data)
 
-  def setSlaveAddress(address: Int): Unit = I2c.setSlaveAddress(fd, address)
+  def readByteSimple(address: Int): Byte = I2c.readByteSimple(fd, file, address)
+  def writeByteSimple(address: Int, data: Int) = I2c.writeByteSimple(fd, file, address, data)
+  def readShort(address: Int): Short = I2c.readShort(fd, file, address)
+  def writeShort(address: Int, data: Int) = I2c.writeShort(fd, file, address, data)
+  def writeByteSimple(address: Int, register: Int, data: Int) = I2c.writeByteSimple(fd, file, address, register, data)
+  def writeShort(address: Int, reg: Int, data: Int) = I2c.writeShort(fd, file, address, reg, data)
+  def writeBytes(address: Int, register: Int, data: Seq[Int]): Unit = I2c.writeBytes(fd, file, address, register, data)
+  def writeBytes(address: Int, data: Seq[Int]): Unit = I2c.writeBytes(fd, file, address, data)
+  def readBytes(address: Int, length: Int): Seq[Byte] = I2c.readBytes(fd, file, address, length)
 
-  def readByteSimple(address: Int): Byte = I2c.readByteSimple(file, address)
-  def writeByteSimple(address: Int, data: Int) = I2c.writeByteSimple(file, address, data)
-  def readShort(address: Int): Short = I2c.readShort(file, address)
-  def writeShort(address: Int, data: Int) = I2c.writeShort(file, address, data)
-  def writeByteSimple(address: Int, reg: Int, data: Int) = I2c.writeByteSimple(file, address, reg, data)
-  def writeShort(address: Int, reg: Int, data: Int) = I2c.writeShort(file, address, reg, data)
-  def readBytes(address: Int, length: Int): Seq[Byte] = I2c.readBytes(file, address, length)
-  def writeBytes(address: Int, data: Seq[Int]): Unit = I2c.writeBytes(file, address, data)
-  def writeBytes(address: Int, reg: Int, data: Seq[Int]): Unit = I2c.writeBytes(file, address, reg, data)
+  def setSlaveAddress(address: Int): Unit = I2c.setSlaveAddress(fd, address)
 }
 
 

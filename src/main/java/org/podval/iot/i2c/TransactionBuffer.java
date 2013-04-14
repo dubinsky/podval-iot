@@ -16,23 +16,20 @@
 
 package org.podval.iot.i2c;
 
+import com.sun.jna.Union;
 import com.sun.jna.Structure;
 
 
-// JNA Structures do not work in Scala: JNA expects public fields, which Scala does not generate (it uses methods instead).
-// One way around it is to use modified JNA; see https://code.google.com/p/scala-native-access/.
-// I want to use stock JNA, so the only way seems to be to write the Structures in Java :(
-public final class TransactionData extends Structure {
+public class TransactionBuffer extends Union implements Structure.ByReference {
 
-    public byte readWrite; // char? (=signed byte?)
+    public static final int BLOCK_MAX = 32;
 
 
-    public byte command;
+    public byte byte_;
 
 
-    public int size;
+    public short word;
 
 
-    //  For a couple of calls, null is expected instead of the block's address; will it work with non-null?
-    public TransactionBuffer buffer = new TransactionBuffer();
+    public byte[] block = new byte[BLOCK_MAX + 2]; // block[0] is used for length and one more for PEC
 }

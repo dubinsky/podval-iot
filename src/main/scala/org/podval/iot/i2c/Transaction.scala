@@ -17,69 +17,95 @@
 package org.podval.iot.i2c
 
 import org.podval.iot.system.CLib
+import org.podval.iot.i2c.I2cExeption
 
 
 final class Transaction {
 
-  val data = new TransactionData
-
-  def byte: Byte = data.block(0)
+  /*private*/ val data = new TransactionData
 
 
-  def byte_=(value: Byte) { data.block(0) = value }
+  def read : Transaction = setReadWrite(1)
+  def write: Transaction = setReadWrite(0)
+  def readWrite(value: Int): Transaction = setReadWrite(value.toByte)
+  private[this] def setReadWrite(value: Byte): Transaction = { data.readWrite = value; this }
+
+  def quick         : Transaction = setSize(0)
+  def byte          : Transaction = setSize(1)
+  def byteData      : Transaction = setSize(2)
+  def wordData      : Transaction = setSize(3)
+  def procCall      : Transaction = setSize(4)
+  def blockData     : Transaction = setSize(5)
+  def blockBrokenI2c: Transaction = setSize(6)
+  def blockProcCall : Transaction = setSize(7)
+  def blockDataI2c  : Transaction = setSize(8)
+  private[this] def setSize(value: Byte): Transaction = { data.size = value; this }
 
 
-  def word = ((data.block(0) << 8) | data.block(1)) & 0xffff
+  def command(value: Int): Transaction = { data.command = value.toByte; this }
 
 
-  def word_=(value: Short) = {
-    data.block(0) = (value >> 8).toByte
-    data.block(1) = (value & 0xff).toByte
+  def getByte: Byte = {
+    data.buffer.setType(classOf[Byte])
+    data.buffer.byte_
   }
 
 
-  def run(file: Int): Int = {
-    CLib.library.ioctl(file, Transaction.smbusAccess, data) // address af "args", obviously!
+  def setByte(value: Byte): Transaction = {
+    data.buffer.setType(classOf[Byte])
+    data.buffer.byte_ = value
+    this
+  }
+
+
+  def getWord: Short = {
+    data.buffer.setType(classOf[Short])
+    data.buffer.word
+  }
+
+
+  def setWord(value: Short): Transaction = {
+    data.buffer.setType(classOf[Short])
+    data.buffer.word
+    this
+  }
+
+
+  def getBytes: Seq[Byte] = {
+    data.buffer.setType(classOf[Array[Byte]])
+    val length = data.buffer.block(0)
+    // XXX handle incorrect length
+    data.buffer.block.tail.take(length)
+  }
+
+
+  def setBytes(value: Seq[Byte]): Transaction = {
+    data.buffer.setType(classOf[Array[Byte]])
+    val length = value.length
+    // XXX handle incorrect length!!!
+    data.buffer.block(0) = length.toByte
+    for (i <- 0 until length)
+      data.buffer.block(i + 1) = value(i)
+    this
+  }
+
+
+  def run(file: Int, address: Int): Transaction = {
+    I2c.setSlaveAddress(file, address)
+
+    val result = CLib.library.ioctl(file, Transaction.smbusAccess, data)
+
+    if (result != 0) throw new I2cExeption(result)
+
+    this
   }
 }
 
-
-/*
-final class AccessData extends Union {
-  var byte: Byte = _
-  var word: Short = _
-  // array itself - not a pointer
-  // ByteBuffer?
-  var block: Array[Byte] = _ // new Array[Byte](Transaction.blockMax + 2) /* block[0] is used for length and one more for PEC */
-}
-*/
 
 object Transaction {
-
-  val blockMax = 32
-
-
-  //* SMBus read or write markers */
-  private val read : Byte = 1
-  private val write: Byte = 0
 
   private val smbusAccess = 0x0720  /* SMBus-level access */
 
 
-  def get(what: Transaction) = if (what != null) what else new Transaction
-
-
-  def read(command: Int, size: Int): Transaction = get(read, command, size)
-
-
-  def write(command: Int, size: Int): Transaction = get(write, command, size)
-
-
-  def get(readWrite: Int, command: Int, size: Int): Transaction = {
-    val result = new Transaction
-    result.data.readWrite = readWrite.toByte
-    result.data.command = command.toByte
-    result.data.size = size
-    result
-  }
+  def apply(transaction: Transaction): Transaction = if (transaction != null) transaction else new Transaction
 }

@@ -16,7 +16,7 @@
 
 package org.podval.iot.i2c.tools
 
-import org.podval.iot.i2c.{I2c, Bus, Address}
+import org.podval.iot.i2c.{I2c, Bus, Address, I2cExeption}
 
 
 final class Detect(bus: Bus, mode: Detect.Mode, first: Int, last: Int) {
@@ -47,35 +47,26 @@ final class Detect(bus: Bus, mode: Detect.Mode, first: Int, last: Int) {
 
 
   def status(address: Address): Detect.Status = {
-    print("Scanning " + address)
     try {
-      address.setSlaveAddress
-
-      print(" set")
-      try {
-        mode match {
-          case Detect.Quick =>
-            // This is known to corrupt the Atmel AT24RF08 EEPROM
+      mode match {
+        case Detect.Quick =>
+          // This is known to corrupt the Atmel AT24RF08 EEPROM
+          address.writeQuick(0)
+        case Detect.Read =>
+          // This is known to lock SMBus on various write-only chips (mainly clock chips)
+          readByte
+        case Detect.Default =>
+          if ((0x30 <= address.address && address.address <= 0x37) || (0x50 <= address.address && address.address <= 0x5F))
+            address.readByte
+          else
             address.writeQuick(0)
-          case Detect.Read =>
-            // This is known to lock SMBus on various write-only chips (mainly clock chips)
-            readByte
-          case Detect.Default =>
-            if ((0x30 <= address.address && address.address <= 0x37) || (0x50 <= address.address && address.address <= 0x5F))
-              address.readByte
-            else
-              address.writeQuick(0)
-        }
-
-        println(" present!")
-        Detect.Present
-        
-      } catch {
-        case e: Exception => println(e); Detect.Absent
       }
+
+      Detect.Present
+        
     } catch {
-      case e: IllegalStateException => Detect.Busy
-      case e: Exception => println(e); Detect.Error
+      case e: I2cExeption => if (e.result == Detect.EBUSY) Detect.Busy else Detect.Absent
+      case e: Exception => Detect.Error
     }
   }
 }
@@ -96,7 +87,11 @@ object Detect {
   case object Present extends Status
 
 
+  private val EBUSY = -16
+
+
   def main(args: Array[String]) {
+    // XXX Add command-line options!
     new Detect((new I2c).bus(1), Default, 0x03, 0x77).scan
   }
 }

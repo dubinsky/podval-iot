@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Podval Group.
+ * Copyright 2012-2013 Podval Group.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,11 @@
 
 package org.podval.iot.i2c
 
-import org.podval.iot.system.{CLib, Fd}
-
-import java.io.{RandomAccessFile, IOException}
-
-import scala.collection.mutable
-
 
 final class I2c {
+
+  import scala.collection.mutable
+
 
   private val number2bus = mutable.Map[Int, Bus]()
 
@@ -44,133 +41,61 @@ final class I2c {
 
 // See the sources of the i2c-tools package: i2c-dev.h, smbusmodule, ....
 
+
 object I2c {
 
-  // val forceSlaveAddress = 0x0706	/* Change slave address			*/
+  //  val forceSlaveAddress = 0x0706	/* Change slave address			*/
   //  val getFuncs          = 0x0705  /* Get the adapter functionality */
   //  val readAndWrite      = 0x0707	/* Combined R/W transfer (one stop only)*/
   //  val pec               = 0x0708	/* != 0 for SMBus PEC                   */
 
 
-  /* SMBus transaction types (size parameter) */
-  val quick         : Int = 0
-  val byte          : Int = 1
-  val byteData      : Int = 2
-  val wordData      : Int = 3
-  val procCall      : Int = 4
-  val blockData     : Int = 5
-  val blockBrokenI2c: Int = 6
-  val blockProcCall : Int = 7
-  val blockDataI2c  : Int = 8
+  // XXX accessData must be null -?
+  def writeQuick(file: Int, address: Int, data: Int) =
+    Transaction(null).readWrite(data).quick.command(0).run(file, address)
 
 
-  // XXX returns underlying access's return value...
-  def writeQuick(file: Int, address: Int, data: Int) = {
-    setSlaveAddress(file, address)
-
-    val transaction = Transaction.get(data, 0, quick)
-    transaction.run(file) // XXX accessData must be null -?
-  }
+  // XXX accessData must be null -?
+  def writeByte(file: Int, address: Int, data: Int) =
+    Transaction(null).write.byte.command(data).run(file, address)
 
 
-  def readByte(file: Int, address: Int): Int = {
-    setSlaveAddress(file, address)
-
-    val transaction = Transaction.read(0, byte)
-    checkRead(transaction.run(file))
-    transaction.byte
-  }
+  def readByte(file: Int, address: Int): Int =
+    Transaction(null).read.byte.command(0).run(file, address).getByte
 
 
-  def writeByte(file: Int, address: Int, data: Int) {
-    setSlaveAddress(file, address)
-
-    val transaction = Transaction.write(data, byte)
-    // XXX process errors
-    transaction.run(file) // XXX accessData must be null -?
-  }
+  def readByteData(file: Int, address: Int, command: Int): Int =
+    Transaction(null).read.byteData.command(command).run(file, address).getByte
 
 
-  // XXX "command" below is the same as "register"...
-
-  def readByteData(file: Int, address: Int, command: Int): Int = {
-    setSlaveAddress(file, address)
-
-    val transaction = Transaction.read(command, byteData)
-    checkRead(transaction.run(file))
-    transaction.byte
-  }
+  def writeByteData(file: Int, address: Int, command: Int, data: Int) =
+    Transaction(null).write.byteData.command(command).setByte(data.toByte).run(file, address)
 
 
-  def writeByteData(file: Int, address: Int, command: Int, data: Int) {
-    setSlaveAddress(file, address)
-
-    val transaction = Transaction.write(command, byteData)
-    transaction.byte = data.toByte
-    // XXX process errors
-    transaction.run(file)
-  }
+  def readWordData(file: Int, address: Int, command: Int): Int =
+    Transaction(null).read.wordData.command(command).run(file, address).getWord
 
 
-  def readWordData(file: Int, address: Int, command: Int): Int = {
-    setSlaveAddress(file, address)
-
-    val transaction = Transaction.read(command, wordData)
-    checkRead(transaction.run(file))
-    transaction.word
-  }
+  def writeWordData(file: Int, address: Int, command: Int, data: Int) =
+    Transaction(null).write.wordData.command(command).setWord(data.toShort).run(file, address)
 
 
-  def writeWordData(file: Int, address: Int, command: Int, data: Int) {
-    setSlaveAddress(file, address)
-
-    val transaction = Transaction.write(command, wordData)
-    transaction.word = data.toShort
-    // XXX process errors
-    transaction.run(file)
-  }
+  def processCall(file: Int, address: Int, command: Int, data: Int): Int =
+    Transaction(null).write.procCall.command(command).setWord(data.toShort).run(file, address).getWord
 
 
-  def processCall(file: Int, address: Int, command: Int, data: Int): Int = {
-    setSlaveAddress(file, address)
-
-    val transaction = Transaction.write(command, procCall)
-    transaction.word = data.toShort
-    checkRead(transaction.run(file))
-    transaction.word
-  }
+  def readBlockData(file: Int, address: Int, command: Int): Seq[Byte] =
+    Transaction(null).read.blockData.command(command).run(file, address).getBytes
 
 
-  def readBlockData(file: Int, address: Int, command: Int): Seq[Byte] = {
-    setSlaveAddress(file, address)
-
-    val transaction = Transaction.read(command, blockData)
-    checkRead(transaction.run(file))
-    // XXX data.block[0] is the length
-    null
-  }
+  // XXX do I need low-level thing with an array instead of a Sequence? I hope not...
+  def writeBlockData(file: Int, address: Int, command: Int, data: Seq[Int]) =
+    Transaction(null).write.blockData.command(command).setBytes(data map (_.toByte)).run(file, address)
 
 
   //  def readBytes(file: Int, reg: Int, length: Int): Seq[Byte] = {
   //  XXX requires the "access" ioctl
   //  }
-
-
-  def writeBlockData(file: Int, address: Int, command: Int, data: Seq[Int]) {
-    setSlaveAddress(file, address)
-
-    val transaction = Transaction.write(command, blockData)
-    // XXX do I need low-level thing with an array instead of a Sequence? I hope not...
-    // XXX implement:
-//    int i;
-//    if (length > 32)
-//      length = 32;
-//    for (i = 1; i <= length; i++)
-//    data.block[i] = values[i-1];
-//    data.block[0] = length;
-    transaction.run(file)
-  }
-
 
   /*
 
@@ -225,79 +150,76 @@ object I2c {
   */
 
 
-  private[this] def checkRead(result: Int) = if (result != 0) throw new IOException("SMB bus access failed")
-
-
   private val setSlaveAddress   = 0x0703  /* Use this slave address */
-  private val EBUSY = -16
 
 
   def setSlaveAddress(file: Int, address: Int): Unit = {
+    import org.podval.iot.system.CLib
+
     val result = CLib.library.ioctl(file, setSlaveAddress, address)
 
-    if (result < 0) {
-      throw if (result == EBUSY) {
-        new IllegalStateException("Address is busy " + this)
-      } else {
-        new IOException("Failed to set slave address for " + this)
-      }
-    }
+    if (result != 0) throw new I2cExeption(result)
   }
 
 
-  def readByteSimple(file: RandomAccessFile, address: Int): Byte = {
+  // Calls using read/write on the RandomAccessFile - "simple" flavor.
+
+  import java.io.RandomAccessFile
+
+
+  def readByteSimple(file: Int, randomAccessFile: RandomAccessFile, address: Int): Byte = {
     setSlaveAddress(file, address)
-    file.readByte
+    randomAccessFile.readByte
   }
 
 
-  def writeByteSimple(file: RandomAccessFile, address: Int, data: Int) {
+  def writeByteSimple(file: Int, randomAccessFile: RandomAccessFile, address: Int, data: Int) {
     setSlaveAddress(file, address)
-    file.writeByte(data)
+    randomAccessFile.writeByte(data)
   }
 
 
-  def readShort(file: RandomAccessFile, address: Int): Short = {
+  def readShort(file: Int, randomAccessFile: RandomAccessFile, address: Int): Short = {
     setSlaveAddress(file, address)
-    file.readShort
+    randomAccessFile.readShort
   }
 
 
-  def writeShort(file: RandomAccessFile, address: Int, data: Int) {
+  def writeShort(file: Int, randomAccessFile: RandomAccessFile, address: Int, data: Int) {
     setSlaveAddress(file, address)
-    file.writeShort(data)
+    randomAccessFile.writeShort(data)
   }
 
 
-  def writeByteSimple(file: RandomAccessFile, address: Int, reg: Int, data: Int) = writeBytes(file, address, Seq(reg, data))
+  def writeByteSimple(file: Int, randomAccessFile: RandomAccessFile, address: Int, register: Int, data: Int) =
+    writeBytes(file, randomAccessFile, address, Seq(register, data))
 
 
-  def writeShort(file: RandomAccessFile, address:Int, reg: Int, data: Int) = writeBytes(file, address, Seq(reg, (data >> 8), data))
+  def writeShort(file: Int, randomAccessFile: RandomAccessFile, address:Int, register: Int, data: Int) =
+    writeBytes(file, randomAccessFile, address, Seq(register, (data >> 8), data))
 
 
-  def readBytes(file: RandomAccessFile, address: Int, length: Int): Seq[Byte] = {
+  def writeBytes(file: Int, randomAccessFile: RandomAccessFile, address: Int, register: Int, data: Seq[Int]): Unit =
+    writeBytes(file, randomAccessFile, address, register +: data)
+
+
+  def writeBytes(file: Int, randomAccessFile: RandomAccessFile, address: Int, data: Seq[Int]): Unit = {
+    setSlaveAddress(file, address)
+    randomAccessFile.write(data.map(_.toByte).toArray)
+  }
+
+
+  def readBytes(file: Int, randomAccessFile: RandomAccessFile, address: Int, length: Int): Seq[Byte] = {
     // XXX swallow into Transaction? Use blockMax, anyway...
-    if (length < 1 || length > 32) {
-      throw new IllegalArgumentException("Length must be between 1 and 32")
+    if (length < 1 || length > TransactionBuffer.BLOCK_MAX) {
+      throw new IllegalArgumentException("Length must be between 1 and " + TransactionBuffer.BLOCK_MAX)
     }
 
     setSlaveAddress(file, address)
 
     val buffer: Array[Byte] = new Array(length)
-    val result = file.read(buffer)
+    val result = randomAccessFile.read(buffer)
     // XXX: when length is right, there is no copying? Right?!
     buffer.take(math.max(0, result))
   }
-
-
-  def writeBytes(file: RandomAccessFile, address: Int, data: Seq[Int]): Unit = {
-    setSlaveAddress(file, address)
-    file.write(data.map(_.toByte).toArray)
-  }
-
-
-  def writeBytes(file: RandomAccessFile, address: Int, reg: Int, data: Seq[Int]): Unit = writeBytes(file, address, reg +: data)
-
-
-  def setSlaveAddress(file: RandomAccessFile, address: Int): Unit = setSlaveAddress(Fd.get(file), address)
 }
