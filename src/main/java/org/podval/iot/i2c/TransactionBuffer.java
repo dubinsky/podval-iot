@@ -25,6 +25,13 @@ public class TransactionBuffer extends Union implements Structure.ByReference {
     public static final int BLOCK_MAX = 32;
 
 
+    public static void checkLength(byte length) {
+        if (length < 1 || length > BLOCK_MAX) {
+            throw new IllegalArgumentException("Length must be between 1 and " + TransactionBuffer.BLOCK_MAX);
+        }
+    }
+
+
     public byte byte_;
 
 

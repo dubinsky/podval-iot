@@ -79,11 +79,11 @@ object Mpl115a2 {
   val address: Int = 0x60
 
   // Registers
-  val pressure        = 0x00 // Msb; Lsb
-  val temperature     = 0x02 // Msb; Lsb
-  val a0Coeff         = 0x04 // Msb; Lsb
-  val b1Coeff         = 0x06 // Msb; Lsb
-  val b2Coeff         = 0x08 // Msb; Lsb
-  val c12Coeff        = 0x0A // Msb; Lsb
-  val startConversion = 0x12
+  val pressure       : Byte = 0x00 // Msb; Lsb
+  val temperature    : Byte = 0x02 // Msb; Lsb
+  val a0Coeff        : Byte = 0x04 // Msb; Lsb
+  val b1Coeff        : Byte = 0x06 // Msb; Lsb
+  val b2Coeff        : Byte = 0x08 // Msb; Lsb
+  val c12Coeff       : Byte = 0x0A // Msb; Lsb
+  val startConversion: Byte = 0x12
 }

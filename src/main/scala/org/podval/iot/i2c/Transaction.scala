@@ -17,32 +17,28 @@
 package org.podval.iot.i2c
 
 import org.podval.iot.system.CLib
-import org.podval.iot.i2c.I2cExeption
 
 
 final class Transaction {
 
-  /*private*/ val data = new TransactionData
+  private val data = new TransactionData
 
 
-  def read : Transaction = setReadWrite(1)
-  def write: Transaction = setReadWrite(0)
-  def readWrite(value: Int): Transaction = setReadWrite(value.toByte)
-  private[this] def setReadWrite(value: Byte): Transaction = { data.readWrite = value; this }
+  def read : Transaction = readWrite(1)
+  def write: Transaction = readWrite(0)
+  def readWrite(value: Byte): Transaction = { data.readWrite = value; this }
 
-  def quick         : Transaction = setSize(0)
-  def byte          : Transaction = setSize(1)
-  def byteData      : Transaction = setSize(2)
-  def wordData      : Transaction = setSize(3)
-  def procCall      : Transaction = setSize(4)
-  def blockData     : Transaction = setSize(5)
-  def blockBrokenI2c: Transaction = setSize(6)
-  def blockProcCall : Transaction = setSize(7)
-  def blockDataI2c  : Transaction = setSize(8)
-  private[this] def setSize(value: Byte): Transaction = { data.size = value; this }
-
-
-  def command(value: Int): Transaction = { data.command = value.toByte; this }
+  def quick         : Transaction = size(0)
+  def byte          : Transaction = size(1)
+  def byteData      : Transaction = size(2)
+  def wordData      : Transaction = size(3)
+  def procCall      : Transaction = size(4)
+  def blockData     : Transaction = size(5)
+  def blockBrokenI2c: Transaction = size(6)
+  def blockProcCall : Transaction = size(7)
+  def blockDataI2c  : Transaction = size(8)
+  def blockI2c(length: Byte) = if (length == 32) blockBrokenI2c else blockDataI2c
+  private[this] def size(value: Byte): Transaction = { data.size = value; this }
 
 
   def getByte: Byte = {
@@ -71,27 +67,35 @@ final class Transaction {
   }
 
 
+  def setLength(value: Byte): Transaction = {
+    TransactionBuffer.checkLength(value)
+    data.buffer.setType(classOf[Array[Byte]])
+    data.buffer.block(0) = value
+    this
+  }
+
+
   def getBytes: Seq[Byte] = {
     data.buffer.setType(classOf[Array[Byte]])
     val length = data.buffer.block(0)
-    // XXX handle incorrect length
+    TransactionBuffer.checkLength(length)
     data.buffer.block.tail.take(length)
   }
 
 
   def setBytes(value: Seq[Byte]): Transaction = {
-    data.buffer.setType(classOf[Array[Byte]])
     val length = value.length
-    // XXX handle incorrect length!!!
-    data.buffer.block(0) = length.toByte
+    setLength(length.toByte)
     for (i <- 0 until length)
       data.buffer.block(i + 1) = value(i)
     this
   }
 
 
-  def run(file: Int, address: Int): Transaction = {
+  def run(file: Int, address: Int, command: Byte): Transaction = {
     I2c.setSlaveAddress(file, address)
+
+    data.command = command
 
     val result = CLib.library.ioctl(file, Transaction.smbusAccess, data)
 

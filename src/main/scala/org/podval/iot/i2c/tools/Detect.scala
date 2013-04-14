@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// XXX move into a separate Maven module!
 package org.podval.iot.i2c.tools
 
 import org.podval.iot.i2c.{I2c, Bus, Address, I2cExeption}
@@ -31,14 +32,12 @@ final class Detect(bus: Bus, mode: Detect.Mode, first: Int, last: Int) {
       val line = for (j <- 0 until 16) yield {
         val address = i+j
         val status = statuses.get(address)
-        val legend =
-          if (status.isEmpty) "  " else status.get match {
-            case Detect.Error   => "EE"
-            case Detect.Busy    => "UU"
-            case Detect.Absent  => "--"
-            case Detect.Present => "%02x" format address
-          }
-        legend
+        if (status.isEmpty) "  " else status.get match {
+          case Detect.Error   => "EE"
+          case Detect.Busy    => "UU"
+          case Detect.Absent  => "--"
+          case Detect.Present => "%02x" format address
+        }
       }
 
       println(("%02X: " format i) + line.mkString(" "))
@@ -47,19 +46,15 @@ final class Detect(bus: Bus, mode: Detect.Mode, first: Int, last: Int) {
 
 
   def status(address: Address): Detect.Status = {
+    def safeToRead(a: Int) = (0x30 <= a && a <= 0x37) || (0x50 <= a && a <= 0x5F)
+
     try {
-      mode match {
-        case Detect.Quick =>
-          // This is known to corrupt the Atmel AT24RF08 EEPROM
-          address.writeQuick(0)
-        case Detect.Read =>
-          // This is known to lock SMBus on various write-only chips (mainly clock chips)
-          readByte
-        case Detect.Default =>
-          if ((0x30 <= address.address && address.address <= 0x37) || (0x50 <= address.address && address.address <= 0x5F))
-            address.readByte
-          else
-            address.writeQuick(0)
+      if ((mode == Detect.Read) || ((mode == Detect.Default) && safeToRead(address.address))) {
+        // This is known to lock SMBus on various write-only chips (mainly clock chips)
+        address.readByte
+      } else {
+        // This is known to corrupt the Atmel AT24RF08 EEPROM
+        address.writeQuick(0)
       }
 
       Detect.Present

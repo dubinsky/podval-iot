@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Podval Group.
+ * Copyright 2012-2013 Podval Group.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,24 +36,24 @@ final class Sht21(bus: Bus) {
   def humidityHold: Float = convertHumidity(readMeasurement(0xe5, true))
 
 
-  def convertTemperature(value: Int) = convert(value, -46.85f, 175.72f)
+  private[this] def convertTemperature(value: Int) = convert(value, -46.85f, 175.72f)
 
 
-  def convertHumidity(value: Int) = convert(value, -6.0f, 125.0f)
+  private[this] def convertHumidity(value: Int) = convert(value, -6.0f, 125.0f)
 
-  
-  def convert(value: Int, a: Float, b: Float): Float = a + b * value / 65535.0f
 
-  
-  def readMeasurement(command: Int, hold: Boolean) = {
-    val status = address.writeByteSimple(command)
+  private[this] def convert(value: Int, a: Float, b: Float): Float = a + b * value / 65535.0f
+
+
+  private[this] def readMeasurement(command: Int, hold: Boolean) = {
+    address.writeByte(command.toByte)
     
     if (hold == false) {
       // wait for conversion, 14 bits = 85ms
       Thread.sleep(85)
     }
     
-    val bytes = address.readBytes(3)
+    val bytes = address.readBytes(3) // XXX: readBlockDataI2c(0, 3)
     // XXX: Signal failed read better!
     if (bytes.isEmpty) 0 else {
       val result = (bytes(0) << 8) | (bytes(1) & 0xfc)
@@ -65,8 +65,8 @@ final class Sht21(bus: Bus) {
   }
 
   
-  def readUserRegister = {
-    address.writeByteSimple(0xe7)
-    readByte
-  }
+//  def readUserRegister = {
+//    address.writeByte(0xe7.toByte)
+//    readByte
+//  }
 }

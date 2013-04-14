@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Podval Group.
+ * Copyright 2012-2013 Podval Group.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,13 +55,14 @@ class LedBackpack(bus: Bus, number: Int) {
 
 
   def update {
-    val bytes = new Array[Int](1 + buffer.length*2)
-    bytes(0) = 0x00
+    val bytes = new Array[Byte](1 + buffer.length*2)
+    bytes(0) = 0x00.toByte
     for (i <- 0 until buffer.length) {
-      bytes(1+i*2) = buffer(i) & 0xff
-      bytes(2+i*2) = (buffer(i) >> 8) & 0xff
+      bytes(1+i*2) = (buffer(i) & 0xff).toByte
+      bytes(2+i*2) = ((buffer(i) >> 8) & 0xff).toByte
     }
 
+//  XXX:  address.writeBlockDataI2c(0, bytes)
     address.writeBytes(bytes)
   }
 
@@ -76,9 +77,9 @@ class LedBackpack(bus: Bus, number: Int) {
 
   def setBlinkRate(value: LedBackpack.BlinkRate) {
     val rate = value match {
-      case LedBackpack.BlinkOff => 0x00
-      case LedBackpack.Blink2Hz => 0x01
-      case LedBackpack.Blink1Hz => 0x02
+      case LedBackpack.BlinkOff    => 0x00
+      case LedBackpack.Blink2Hz    => 0x01
+      case LedBackpack.Blink1Hz    => 0x02
       case LedBackpack.BlinkHalfHz => 0x03
     }
 
@@ -86,7 +87,7 @@ class LedBackpack(bus: Bus, number: Int) {
   }
 
 
-  private[this] def writeByte0(reg: Int) = address.writeByteSimple(reg, 0x00)
+  private[this] def writeByte0(command: Int) = address.writeByteData(command.toByte, 0x00)
 }
 
 
