@@ -46,7 +46,7 @@ final class Sht21(bus: Bus) {
 
   
   def readMeasurement(command: Int, hold: Boolean) = {
-    val status = address.writeByte(command)
+    val status = address.writeByteSimple(command)
     
     if (hold == false) {
       // wait for conversion, 14 bits = 85ms
@@ -66,7 +66,7 @@ final class Sht21(bus: Bus) {
 
   
   def readUserRegister = {
-    address.writeByte(0xe7)
+    address.writeByteSimple(0xe7)
     readByte
   }
 }

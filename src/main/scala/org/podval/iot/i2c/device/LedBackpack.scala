@@ -55,7 +55,7 @@ class LedBackpack(bus: Bus, number: Int) {
 
 
   def update {
-    val bytes = new Array[Int](1+buffer.length*2)
+    val bytes = new Array[Int](1 + buffer.length*2)
     bytes(0) = 0x00
     for (i <- 0 until buffer.length) {
       bytes(1+i*2) = buffer(i) & 0xff
@@ -86,7 +86,7 @@ class LedBackpack(bus: Bus, number: Int) {
   }
 
 
-  private[this] def writeByte0(reg: Int) = address.writeByte(reg, 0x00)
+  private[this] def writeByte0(reg: Int) = address.writeByteSimple(reg, 0x00)
 }
 
 

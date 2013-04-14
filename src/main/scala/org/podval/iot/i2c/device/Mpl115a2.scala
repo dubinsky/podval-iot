@@ -49,7 +49,7 @@ final class Mpl115a2(bus: Bus) {
 
   def reading: (Float, Float) = {
     // Get raw pressure and temperature settings
-    address.writeByte(Mpl115a2.startConversion, 0x00)
+    address.writeByteData(Mpl115a2.startConversion, 0x00)
 
     // Wait a bit for the conversion to complete (3ms max)
     Thread.sleep(5)

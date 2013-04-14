@@ -38,6 +38,7 @@ final class Detect(bus: Bus, mode: Detect.Mode, first: Int, last: Int) {
             case Detect.Absent  => "--"
             case Detect.Present => "%02x" format address
           }
+        legend
       }
 
       println(("%02X: " format i) + line.mkString(" "))
@@ -46,33 +47,35 @@ final class Detect(bus: Bus, mode: Detect.Mode, first: Int, last: Int) {
 
 
   def status(address: Address): Detect.Status = {
-    println("Scanning " + address)
+    print("Scanning " + address)
     try {
       address.setSlaveAddress
-      
+
+      print(" set")
       try {
         mode match {
-//      case Address.Quick =>
-//        // This is known to corrupt the Atmel AT24RF08 EEPROM
-//        writeQuick(I2C_SMBUS_WRITE)
+          case Detect.Quick =>
+            // This is known to corrupt the Atmel AT24RF08 EEPROM
+            address.writeQuick(0)
           case Detect.Read =>
             // This is known to lock SMBus on various write-only chips (mainly clock chips)
             readByte
           case Detect.Default =>
-//        if ((0x30 <= device.address && device.address <= 0x37) || (0x50 <= device.address && device.address <= 0x5F))
-            readByte
-//        else
-//        device.writeQuick(I2C_SMBUS_WRITE)
+            if ((0x30 <= address.address && address.address <= 0x37) || (0x50 <= address.address && address.address <= 0x5F))
+              address.readByte
+            else
+              address.writeQuick(0)
         }
-        
+
+        println(" present!")
         Detect.Present
         
       } catch {
-        case _ => Detect.Absent
+        case e: Exception => println(e); Detect.Absent
       }
     } catch {
       case e: IllegalStateException => Detect.Busy
-      case _ => Detect.Error
+      case e: Exception => println(e); Detect.Error
     }
   }
 }

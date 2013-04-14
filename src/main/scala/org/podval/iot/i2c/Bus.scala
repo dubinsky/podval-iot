@@ -16,8 +16,8 @@
 
 package org.podval.iot.i2c
 
-import java.io.{IOException, RandomAccessFile}
-import org.podval.iot.system.{Fd, CLib}
+import java.io.RandomAccessFile
+import org.podval.iot.system.Fd
 
 
 /*
@@ -50,29 +50,34 @@ final class Bus(val i2c: I2c, val number: Int) {
     file.close
   }
 
+
   def address(value: Int): Address = new Address(this, value)
 
 
   // XXX synchronize and reuse structures?
 
-  def writeQuick(data: Int) = I2c.writeQuick(fd, data)
-  def readByte(address: Int): Byte = I2c.readByte(file, address)
-  def writeByte(address: Int, data: Int) = I2c.writeByte(file, address, data)
-  def writeByte(data: Int) = I2c.writeByte(fd, data)
-  def writeByteData(command: Int, data: Int) = I2c.writeByteData(fd, command, data)
+  def writeQuick(address: Int, data: Int) = I2c.writeQuick(fd, address, data)
+  def readByte(address: Int): Int = I2c.readByte(fd, address)
+  def writeByte(address: Int, data: Int) = I2c.writeByte(fd, address, data)
+  def readByteData(address: Int, command: Int): Int = I2c.readByteData(fd, address, command)
+  def writeByteData(address: Int, command: Int, data: Int) = I2c.writeByteData(fd, address, command, data)
+  def readWordData(address: Int, command: Int): Int = I2c.readWordData(fd, address, command)
+  def writeWordData(address: Int, command: Int, data: Int) = I2c.writeWordData(fd, address, command, data)
+  def processCall(address: Int, command: Int, data: Int): Int = I2c.processCall(fd, address, command, data)
+  def readBlockData(address: Int, command: Int): Seq[Byte] = I2c.readBlockData(fd, address, command)
+  def writeBlockData(address: Int, command: Int, data: Seq[Int]) = I2c.writeBlockData(fd, address, command, data)
+
+  def setSlaveAddress(address: Int): Unit = I2c.setSlaveAddress(fd, address)
+
+  def readByteSimple(address: Int): Byte = I2c.readByteSimple(file, address)
+  def writeByteSimple(address: Int, data: Int) = I2c.writeByteSimple(file, address, data)
   def readShort(address: Int): Short = I2c.readShort(file, address)
   def writeShort(address: Int, data: Int) = I2c.writeShort(file, address, data)
-  def writeWordData(command: Int, data: Int) = I2c.writeWordData(fd, command, data)
-  //  def readByte(reg: Int): Byte = I2c.readByte(fd, reg)
-  def writeByte(address: Int, reg: Int, data: Int) = I2c.writeByte(file, address, data)
-  //  def readShort(reg: Int): Byte = I2c.readShort(fd, reg)
+  def writeByteSimple(address: Int, reg: Int, data: Int) = I2c.writeByteSimple(file, address, reg, data)
   def writeShort(address: Int, reg: Int, data: Int) = I2c.writeShort(file, address, reg, data)
   def readBytes(address: Int, length: Int): Seq[Byte] = I2c.readBytes(file, address, length)
   def writeBytes(address: Int, data: Seq[Int]): Unit = I2c.writeBytes(file, address, data)
-  //  def readBytes(reg: Int, length: Int): Seq[Byte] = I2c.readBytes(fd, reg, length)
-  def writeBytes(address: Int, reg: Int, data: Seq[Int]): Unit = I2c.writeBytes(file, address, reg +: data)
-
-  def setSlaveAddress(address: Int): Unit = I2c.setSlaveAddress(file, address)
+  def writeBytes(address: Int, reg: Int, data: Seq[Int]): Unit = I2c.writeBytes(file, address, reg, data)
 }
 
 
