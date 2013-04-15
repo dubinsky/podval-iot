@@ -14,25 +14,30 @@
  * limitations under the License.
  */
 
-package org.podval.iot.app
+package org.podval.iot.platform.raspberrypi
 
-import org.podval.iot.gpio.Output
-import org.podval.iot.platform.raspberrypi.RaspberryPi
+import org.podval.iot.i2c.core.I2c
 
 
-object Led {
+final class RaspberryPi {
 
-  def main(args: Array[String]) {
-    val pi = new RaspberryPi
-    for (i <- 0 to 52) {
-      println("pin " + i + " is " + pi.gpio.pin(i).level)
-    }
-//    val pin = pi.gpio.pin(7)
-//    pin.direction = Output
-//
-//    while (true) {
-//      pin.level = !pin.level
-//      Thread.sleep(1000)
-//    }
+  lazy val revision: Int = {
+    // XXX: revision is available from /proc/cpuinfo after keyword "Revision"
+    2
   }
+
+
+  lazy val i2cController = new I2c
+
+
+  def i2c0 = i2cController.bus(0)
+
+
+  def i2c1 = i2cController.bus(1)
+
+
+  def i2c = if (revision > 1) i2c1 else i2c0
+
+
+  lazy val gpio = new Bcm2835Gpio
 }

@@ -4,7 +4,7 @@
 
     <parent>
         <groupId>org.podval</groupId>
-        <artifactId>org.podval.iot</artifactId>
+        <artifactId>iot</artifactId>
         <version>0.1-SNAPSHOT</version>
     </parent>
 

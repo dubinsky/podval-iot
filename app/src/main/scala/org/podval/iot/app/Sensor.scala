@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Podval Group.
+ * Copyright 2012-2013 Podval Group.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 
 package org.podval.iot.app
 
-import org.podval.iot.raspberrypi.RaspberryPi
 import org.podval.iot.i2c.device.{Sht21, Mpl115a2, SevenSegment}
 
 import java.util.Date
+import org.podval.iot.platform.raspberrypi.RaspberryPi
 
 
 object Sensor {

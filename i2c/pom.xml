@@ -4,21 +4,19 @@
 
     <parent>
         <groupId>org.podval</groupId>
-        <artifactId>org.podval.iot</artifactId>
+        <artifactId>iot</artifactId>
         <version>0.1-SNAPSHOT</version>
     </parent>
 
     <groupId>org.podval.iot</groupId>
-    <artifactId>org.podval.iot.i2c</artifactId>
+    <artifactId>i2c</artifactId>
     <name>Internet of Things: I2C</name>
     <version>0.1-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.podval.iot</groupId>
-            <artifactId>org.podval.iot.system</artifactId>
-            <version>0.1-SNAPSHOT</version>
-        </dependency>
-    </dependencies>
+    <modules>
+        <module>core</module>
+        <module>device</module>
+        <module>tools</module>
+    </modules>
 </project>
