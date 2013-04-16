@@ -54,6 +54,9 @@ final class Bus(val i2c: I2c, val number: Int) {
   def address(value: Int): Address = new Address(this, value)
 
 
+  def getFuncs: Long = I2c.getFuncs(fd)
+
+
   // XXX synchronize and reuse structures?
 
   def writeQuick(address: Int, data: Byte) = I2c.writeQuick(fd, address, data)

@@ -44,10 +44,19 @@ final class I2c {
 
 object I2c {
 
+  import org.podval.iot.system.CLib
+
   //  val forceSlaveAddress = 0x0706	/* Change slave address			*/
-  //  val getFuncs          = 0x0705  /* Get the adapter functionality */
   //  val readAndWrite      = 0x0707	/* Combined R/W transfer (one stop only)*/
   //  val pec               = 0x0708	/* != 0 for SMBus PEC                   */
+
+  private val getFuncs = 0x0705  /* Get the adapter functionality */
+
+  def getFuncs(file: Int): Long = {
+    val result = new FunctionsBits
+    CLib.library.ioctl(file, getFuncs, result)
+    result.funcs.longValue()
+  }
 
 
   def writeQuick(file: Int, address: Int, data: Byte) =
@@ -110,8 +119,6 @@ object I2c {
 
 
   def setSlaveAddress(file: Int, address: Int): Unit = {
-    import org.podval.iot.system.CLib
-
     val result = CLib.library.ioctl(file, setSlaveAddress, address)
 
     if (result != 0) throw new I2cExeption(result)

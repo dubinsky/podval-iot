@@ -62,7 +62,7 @@ class LedBackpack(bus: Bus, number: Int) {
       bytes(2+i*2) = ((buffer(i) >> 8) & 0xff).toByte
     }
 
-//  XXX:  address.writeBlockDataI2c(0, bytes)
+// XXX    address.writeBlockDataI2c(0, bytes)
     address.writeBytes(bytes)
   }
 

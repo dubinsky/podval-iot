@@ -17,25 +17,10 @@
 package org.podval.iot.i2c.core;
 
 import com.sun.jna.Structure;
+import com.sun.jna.NativeLong;
 
 
-// JNA Structures do not work in Scala: JNA expects public fields, which Scala does not generate (it uses methods instead).
-// One way around it is to use modified JNA; see https://code.google.com/p/scala-native-access/.
-// I want to use stock JNA, so the only way seems to be to write the Structures in Java :(
-public final class TransactionData extends Structure {
+public class FunctionsBits extends Structure {
 
-    public TransactionData() {
-        setAlignType(Structure.ALIGN_DEFAULT); // XXX: ALIGN_NONE ?
-    }
-
-    public byte readWrite; // XXX: char? (=signed byte?)
-
-
-    public byte command;
-
-
-    public int size;
-
-
-    public TransactionBuffer buffer = new TransactionBuffer.ByReference();
+    public NativeLong funcs;
 }

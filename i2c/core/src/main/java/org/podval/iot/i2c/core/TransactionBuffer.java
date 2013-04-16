@@ -20,7 +20,11 @@ import com.sun.jna.Union;
 import com.sun.jna.Structure;
 
 
-public class TransactionBuffer extends Union implements Structure.ByReference {
+public class TransactionBuffer extends Union {
+
+    public static class ByValue extends TransactionBuffer implements Structure.ByValue {}
+    public static class ByReference extends TransactionBuffer implements Structure.ByReference {}
+
 
     public static final int BLOCK_MAX = 32;
 
