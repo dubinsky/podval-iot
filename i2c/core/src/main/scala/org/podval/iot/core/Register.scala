@@ -38,5 +38,5 @@ final class Register(val address: Address, val register: Byte) {
 
 //  def writeByteSimple(data: Byte) = address.writeByteSimple(register, data)
 //  def writeShort(data: Short) = address.writeShort(register, data)
-//  def writeBytes(data: Seq[Byte]): Unit = address.writeBytes(register, data)
+//  def writeBytesSimple(data: Seq[Byte]): Unit = address.writeBytesSimple(register, data)
 }

@@ -54,6 +54,7 @@ final class Sht21(bus: Bus) {
     }
     
     val bytes = address.readBytes(3) // XXX: readBlockDataI2c(0, 3)
+    println("***** measurement " + bytes.mkString(","))
     // XXX: Signal failed read better!
     if (bytes.isEmpty) 0 else {
       val result = (bytes(0) << 8) | (bytes(1) & 0xfc)

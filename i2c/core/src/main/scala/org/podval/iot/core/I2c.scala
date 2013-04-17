@@ -60,7 +60,7 @@ object I2c {
 
 
   def writeQuick(file: Int, address: Int, data: Byte) =
-    Transaction(null).readWrite(data).quick.run(file, address, 0)
+    Transaction(null).readWrite(data).quick.run(file, address, 0, "write quick")
 
 
   def writeByte(file: Int, address: Int, data: Byte) =
@@ -68,11 +68,11 @@ object I2c {
 
 
   def readByte(file: Int, address: Int): Byte =
-    Transaction(null).read.byte.run(file, address, 0).getByte
+    Transaction(null).read.byte.run(file, address, 0, "read byte").getByte
 
 
   def readByteData(file: Int, address: Int, command: Byte): Byte =
-    Transaction(null).read.byteData.run(file, address, command).getByte
+    Transaction(null).read.byteData.run(file, address, command, "read byte data").getByte
 
 
   def writeByteData(file: Int, address: Int, command: Byte, data: Byte) =
@@ -80,23 +80,23 @@ object I2c {
 
 
   def readWordData(file: Int, address: Int, command: Byte): Short =
-    Transaction(null).read.wordData.run(file, address, command).getWord
+    Transaction(null).read.wordData.run(file, address, command, "read word data").getWord
 
 
   def writeWordData(file: Int, address: Int, command: Byte, data: Short) =
-    Transaction(null).write.wordData.setWord(data).run(file, address, command)
+    Transaction(null).write.wordData.setWord(data).run(file, address, command, "write word data")
 
 
   def processCall(file: Int, address: Int, command: Byte, data: Short): Short =
-    Transaction(null).write.procCall.setWord(data).run(file, address, command).getWord
+    Transaction(null).write.procCall.setWord(data).run(file, address, command, "process call").getWord
 
 
   def readBlockData(file: Int, address: Int, command: Byte): Seq[Byte] =
-    Transaction(null).read.blockData.run(file, address, command).getBytes
+    Transaction(null).read.blockData.run(file, address, command, "read block data").getBytes
 
 
   def writeBlockData(file: Int, address: Int, command: Byte, data: Seq[Byte]) =
-    Transaction(null).write.blockData.setBytes(data).run(file, address, command)
+    Transaction(null).write.blockData.setBytes(data).run(file, address, command, "write block data")
 
 
   /* Until kernel 2.6.22, the length is hardcoded to 32 bytes. If you
@@ -104,7 +104,7 @@ object I2c {
      2.6.23 and later. */
 
   def readBlockDataI2c(file: Int, address: Int, command: Byte, length: Byte): Seq[Byte] =
-    Transaction(null).read.blockI2c(length).setLength(length).run(file, address, command).getBytes
+    Transaction(null).read.blockI2c(length).setLength(length).run(file, address, command, "read block data I2C").getBytes
 
 
   def writeBlockDataI2c(file: Int, address: Int, command: Byte, data: Seq[Byte]) =
@@ -112,7 +112,7 @@ object I2c {
 
 
   def blockProcessCall(file: Int, address: Int, command: Byte, data: Seq[Byte]) =
-    Transaction(null).write.blockProcCall.setBytes(data).run(file, address, command).getBytes
+    Transaction(null).write.blockProcCall.setBytes(data).run(file, address, command, "process call I2C").getBytes
 
 
   private val setSlaveAddress   = 0x0703  /* Use this slave address */
@@ -155,20 +155,20 @@ object I2c {
 
 
   def writeByteSimple(file: Int, randomAccessFile: RandomAccessFile, address: Int, register: Byte, data: Byte) =
-    writeBytes(file, randomAccessFile, address, Seq(register, data))
+    writeBytesSimple(file, randomAccessFile, address, Seq(register, data))
 
 
   def writeShort(file: Int, randomAccessFile: RandomAccessFile, address: Int, register: Byte, data: Short) =
-    writeBytes(file, randomAccessFile, address, Seq(register, (data >> 8).toByte, (data & 0x0f).toByte))
+    writeBytesSimple(file, randomAccessFile, address, Seq(register, (data >> 8).toByte, (data & 0xff).toByte))
 
 
   def writeBytes(file: Int, randomAccessFile: RandomAccessFile, address: Int, register: Byte, data: Seq[Byte]): Unit =
-    writeBytes(file, randomAccessFile, address, register +: data)
+    writeBytesSimple(file, randomAccessFile, address, register +: data)
 
 
-  def writeBytes(file: Int, randomAccessFile: RandomAccessFile, address: Int, data: Seq[Byte]): Unit = {
+  def writeBytesSimple(file: Int, randomAccessFile: RandomAccessFile, address: Int, data: Seq[Byte]): Unit = {
     setSlaveAddress(file, address)
-    randomAccessFile.write(data.map(_.toByte).toArray)
+    randomAccessFile.write(data.toArray)
   }
 
 

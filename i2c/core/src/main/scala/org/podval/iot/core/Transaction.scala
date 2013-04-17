@@ -92,10 +92,21 @@ final class Transaction {
   }
 
 
-  def run(file: Int, address: Int, command: Byte): Transaction = {
+  def run(file: Int, address: Int, command: Byte): Transaction = run(file, address, command, null)
+
+  def run(file: Int, address: Int, command: Byte, message: String): Transaction = {
     I2c.setSlaveAddress(file, address)
 
     data.command = command
+
+    if (message != null) {
+      // Define "jna.dump_memory" property for memory dump
+      data.write
+      println(message + " transaction.run: data " + data.toString)
+
+      data.buffer.write
+      println("buffer " + data.buffer.toString)
+    }
 
     val result = CLib.library.ioctl(file, Transaction.smbusAccess, data)
 

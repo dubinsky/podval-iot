@@ -48,8 +48,8 @@ final class Address(val bus: Bus, val address: Int) {
 //  def writeShort(data: Short): Unit = bus.writeShort(address, data)
 //  def writeByteSimple(register: Byte, data: Byte) = bus.writeByteSimple(address, register, data)
 //  def writeShort(register: Byte, data: Short) = bus.writeShort(address, register, data)
-//  def writeBytes(register: Byte, data: Seq[Byte]): Unit = bus.writeBytes(address, register, data)
-  def writeBytes(data: Seq[Byte]): Unit = bus.writeBytes(address, data)
+//  def writeBytesSimple(register: Byte, data: Seq[Byte]): Unit = bus.writeBytesSimple(address, register, data)
+  def writeBytesSimple(data: Seq[Byte]): Unit = bus.writeBytesSimple(address, data)
   def readBytes(length: Int): Seq[Byte] = bus.readBytes(address, length)
 
   def setSlaveAddress: Unit = bus.setSlaveAddress(address)

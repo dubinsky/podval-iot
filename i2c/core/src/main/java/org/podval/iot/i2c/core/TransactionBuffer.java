@@ -20,7 +20,9 @@ import com.sun.jna.Union;
 import com.sun.jna.Structure;
 
 
-public class TransactionBuffer extends Union {
+// XXX If, instead of implementing Structure.ByReference right here, I rely on the static inner classes
+// (as JNA documentation recommends!) -  code breaks!
+public class TransactionBuffer extends Union implements Structure.ByReference {
 
     public static class ByValue extends TransactionBuffer implements Structure.ByValue {}
     public static class ByReference extends TransactionBuffer implements Structure.ByReference {}

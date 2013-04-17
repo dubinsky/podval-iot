@@ -55,36 +55,24 @@ class LedBackpack(bus: Bus, number: Int) {
 
 
   def update {
-    val bytes = new Array[Byte](1 + buffer.length*2)
-    bytes(0) = 0x00.toByte
+    // XXX redo with zip... better still, store them like this!
+    val bytes = new Array[Byte](buffer.length*2)
     for (i <- 0 until buffer.length) {
-      bytes(1+i*2) = (buffer(i) & 0xff).toByte
-      bytes(2+i*2) = ((buffer(i) >> 8) & 0xff).toByte
+      bytes(i*2  ) = ( buffer(i)       & 0xff).toByte
+      bytes(i*2+1) = ((buffer(i) >> 8) & 0xff).toByte
     }
 
-// XXX    address.writeBlockDataI2c(0, bytes)
-    address.writeBytes(bytes)
+    address.writeBlockDataI2c(0, bytes)
   }
 
   def setBrightness(value: Int) {
-    if (value < 0 || value > 15) {
-      throw new IllegalArgumentException("Brightness must be between 0 and 15, not " + value)
-    }
-
+    require(0 <= value && value <= 15, "Brightness must be between 0 and 15, not " + value)
     writeByte0(LedBackpack.DIMMING_REGISTER | value)
   }
 
 
-  def setBlinkRate(value: LedBackpack.BlinkRate) {
-    val rate = value match {
-      case LedBackpack.BlinkOff    => 0x00
-      case LedBackpack.Blink2Hz    => 0x01
-      case LedBackpack.Blink1Hz    => 0x02
-      case LedBackpack.BlinkHalfHz => 0x03
-    }
-
-    writeByte0(LedBackpack.DISPLAY_SETUP_REGISTER | 0x01 | (rate << 1))
-  }
+  def setBlinkRate(value: LedBackpack.BlinkRate) =
+    writeByte0(LedBackpack.DISPLAY_SETUP_REGISTER | 0x01 | (value.code << 1))
 
 
   private[this] def writeByte0(command: Int) = address.writeByteData(command.toByte, 0x00)
@@ -97,9 +85,9 @@ object LedBackpack {
   private val DIMMING_REGISTER      : Int = 0xe0
   private val DISPLAY_SETUP_REGISTER: Int = 0x80
 
-  sealed trait BlinkRate
-  case object BlinkOff extends BlinkRate
-  case object Blink1Hz extends BlinkRate
-  case object Blink2Hz extends BlinkRate
-  case object BlinkHalfHz extends BlinkRate
+  sealed class BlinkRate(val code: Byte)
+  case object BlinkOff    extends BlinkRate(0x00)
+  case object Blink1Hz    extends BlinkRate(0x01)
+  case object Blink2Hz    extends BlinkRate(0x02)
+  case object BlinkHalfHz extends BlinkRate(0x03)
 }

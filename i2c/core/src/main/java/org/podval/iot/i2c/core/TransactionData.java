@@ -24,10 +24,6 @@ import com.sun.jna.Structure;
 // I want to use stock JNA, so the only way seems to be to write the Structures in Java :(
 public final class TransactionData extends Structure {
 
-    public TransactionData() {
-        setAlignType(Structure.ALIGN_DEFAULT); // XXX: ALIGN_NONE ?
-    }
-
     public byte readWrite; // XXX: char? (=signed byte?)
 
 
@@ -37,5 +33,5 @@ public final class TransactionData extends Structure {
     public int size;
 
 
-    public TransactionBuffer buffer = new TransactionBuffer.ByReference();
+    public TransactionBuffer buffer = new TransactionBuffer(); // XXX .ByReference();
 }

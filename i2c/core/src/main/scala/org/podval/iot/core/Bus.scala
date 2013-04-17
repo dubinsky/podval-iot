@@ -70,6 +70,7 @@ final class Bus(val i2c: I2c, val number: Int) {
   def readBlockData(address: Int, command: Byte): Seq[Byte] = I2c.readBlockData(fd, address, command)
   def writeBlockData(address: Int, command: Byte, data: Seq[Byte]) = I2c.writeBlockData(fd, address, command, data)
   def readBlockDataI2c(address: Int, command: Byte, length: Byte): Seq[Byte] = I2c.readBlockDataI2c(fd, address, command, length);
+  // XXX rename writeBytes... Figure out why non-I2C flavor does not work...
   def writeBlockDataI2c(address: Int, command: Byte, data: Seq[Byte]) = I2c.writeBlockDataI2c(fd, address, command, data)
   def blockProcessCall(address: Int, command: Byte, data: Seq[Byte]) = I2c.blockProcessCall(fd, address, command, data)
 
@@ -79,8 +80,8 @@ final class Bus(val i2c: I2c, val number: Int) {
 //  def writeShort(address: Int, data: Short) = I2c.writeShort(fd, file, address, data)
 //  def writeByteSimple(address: Int, register: Byte, data: Byte) = I2c.writeByteSimple(fd, file, address, register, data)
 //  def writeShort(address: Int, register: Byte, data: Short) = I2c.writeShort(fd, file, address, register, data)
-//  def writeBytes(address: Int, register: Byte, data: Seq[Byte]): Unit = I2c.writeBytes(fd, file, address, register, data)
-  def writeBytes(address: Int, data: Seq[Byte]): Unit = I2c.writeBytes(fd, file, address, data)
+//  def writeBytesSimple(address: Int, register: Byte, data: Seq[Byte]): Unit = I2c.writeBytesSimple(fd, file, address, register, data)
+  def writeBytesSimple(address: Int, data: Seq[Byte]): Unit = I2c.writeBytesSimple(fd, file, address, data)
   def readBytes(address: Int, length: Int): Seq[Byte] = I2c.readBytes(fd, file, address, length)
 
   def setSlaveAddress(address: Int): Unit = I2c.setSlaveAddress(fd, address)
