@@ -30,9 +30,7 @@ class LedBackpack(bus: Bus, number: Int) {
   private[this] val address = bus.address(0x70 + number)
 
 
-  // XXX remove "buffer"
-  private[this] val buffer = new Array[Int](8)
-//  private[this] val bytes = new Array[Byte](16)
+  private[this] val bytes = new Array[Byte](16)
 
 
   // Turn the oscillator on
@@ -51,46 +49,31 @@ class LedBackpack(bus: Bus, number: Int) {
 
   def clear {
     // XXX:   bytes.fill(0)
-    for (i <- 0 until buffer.length) {
-      buffer(i) = 0x00
+    for (i <- 0 until bytes.length) {
+      bytes(i) = 0x00.toByte
     }
-//    for (i <- 0 until bytes.length) {
-//      bytes(i) = 0x00.toByte
-//    }
   }
 
 
-  def setChar(number: Int, value: Int) = buffer(number) = value
-
-
-  def setBit(charNumber: Int, bit: Int, value: Boolean) =
-    buffer(charNumber) = (buffer(charNumber) & ~bit) | (if (value) bit else 0x00)
-//  def setBit(byteNumber: Int, bit: Int, value: Boolean) =
-//    bytes(byteNumber) = ((bytes(byteNumber) & ~bit) | (if (value) bit else 0x00)).toByte
-
-
-//  def setByte(number: Int, value: Byte) {
-//    // XXX check range?
-//    bytes(number*2+1) = value
-//  }
-//
-//
-//  def setWord(number: Int, value: Short) {
-//    // XXX check range?
-//    bytes(number*2  ) = ( value       & 0xff).toByte
-//    bytes(number*2+1) = ((value >> 8) & 0xff).toByte
-//  }
-
-
-  def update {
-    val bytes = new Array[Byte](buffer.length*2)
-    for (i <- 0 until buffer.length) {
-      bytes(i*2  ) = ( buffer(i)       & 0xff).toByte
-      bytes(i*2+1) = ((buffer(i) >> 8) & 0xff).toByte
-    }
-
-    address.writeBlockDataI2c(0, bytes)
+  def setByte(number: Int, value: Byte) {
+    // XXX check range?
+    bytes(number*2) = value
   }
+
+
+  def setBit(number: Int, bit: Byte, value: Boolean) =
+    // XXX check range?
+    bytes(number*2) = ((bytes(number*2) & ~bit) | (if (value) bit else 0x00)).toByte
+
+
+  def setWord(number: Int, value: Short) {
+    // XXX check range?
+    bytes(number*2  ) = ( value       & 0xff).toByte
+    bytes(number*2+1) = ((value >> 8) & 0xff).toByte
+  }
+
+
+  def update = address.writeBlockDataI2c(0, bytes)
 
 
   def setBrightness(value: Int) {

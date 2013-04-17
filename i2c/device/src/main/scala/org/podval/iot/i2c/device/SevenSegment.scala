@@ -80,18 +80,18 @@ final class SevenSegment(bus: Bus, number: Int = 0) {
   // Sets a single decimal or hexadecimal value (0..9 and A..F)
   private[this] def writeDigit(charNumber: Int, value: Int) {
     require(0 <= value && value <= 0x0f, "Invalid value: " + value)
-    backpack.setChar(charNumber,  SevenSegment.Digits(value))
+    backpack.setByte(charNumber,  SevenSegment.Digits(value).toByte)
   }
 
   
-  private[this] def writeDot(charNumber: Int, value: Boolean) = backpack.setBit(charNumber, 0x80, value)
+  private[this] def writeDot(charNumber: Int, value: Boolean) = backpack.setBit(charNumber, 0x80.toByte, value)
 
   // 
   // Enables or disables the colon character
   // Warning: This function assumes that the colon is character '2',
   // which is the case on 4 char displays, but may need to be modified
   // if another display type is used
-  def colon_=(value: Boolean = true) = backpack.setChar(2, if (value) 0xffff else 0)
+  def colon_=(value: Boolean = true) = backpack.setWord(2, (if (value) 0xffff else 0).toShort)
   def colon: Unit = {}
 
 
