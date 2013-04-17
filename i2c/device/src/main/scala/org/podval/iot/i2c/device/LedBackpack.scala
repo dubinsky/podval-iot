@@ -24,13 +24,16 @@ import org.podval.iot.i2c.core.Bus
  */
 class LedBackpack(bus: Bus, number: Int) {
 
-  if (number < 0 || number > 7) {
-    throw new IllegalArgumentException("Invalid LED backpack address: " + number)
-  }
+  require(0 <= number && number <= 7, "Invalid LED backpack address: " + number)
+
 
   val address = bus.address(0x70 + number)
 
-  val buffer = new Array[Int](8)
+
+  // XXX remove "buffer"
+  private[this] val buffer = new Array[Int](8)
+//  private[this] val bytes = new Array[Byte](16)
+
 
   // Turn the oscillator on
   writeByte0(LedBackpack.SYSTEM_SETUP_REGISTER | 0x01)
@@ -47,15 +50,39 @@ class LedBackpack(bus: Bus, number: Int) {
 
 
   def clear {
-    // XXX:   buffer.fill(0)
+    // XXX:   bytes.fill(0)
     for (i <- 0 until buffer.length) {
       buffer(i) = 0x00
     }
+//    for (i <- 0 until bytes.length) {
+//      bytes(i) = 0x00.toByte
+//    }
   }
 
 
+  def setChar(number: Int, value: Int) = buffer(number) = value
+
+
+  def setBit(charNumber: Int, bit: Int, value: Boolean) =
+    buffer(charNumber) = (buffer(charNumber) & ~bit) | (if (value) bit else 0x00)
+//  def setBit(byteNumber: Int, bit: Int, value: Boolean) =
+//    bytes(byteNumber) = ((bytes(byteNumber) & ~bit) | (if (value) bit else 0x00)).toByte
+
+
+//  def setByte(number: Int, value: Byte) {
+//    // XXX check range?
+//    bytes(number*2+1) = value
+//  }
+//
+//
+//  def setWord(number: Int, value: Short) {
+//    // XXX check range?
+//    bytes(number*2  ) = ( value       & 0xff).toByte
+//    bytes(number*2+1) = ((value >> 8) & 0xff).toByte
+//  }
+
+
   def update {
-    // XXX redo with zip... better still, store them like this!
     val bytes = new Array[Byte](buffer.length*2)
     for (i <- 0 until buffer.length) {
       bytes(i*2  ) = ( buffer(i)       & 0xff).toByte
@@ -64,6 +91,7 @@ class LedBackpack(bus: Bus, number: Int) {
 
     address.writeBlockDataI2c(0, bytes)
   }
+
 
   def setBrightness(value: Int) {
     require(0 <= value && value <= 15, "Brightness must be between 0 and 15, not " + value)
@@ -80,7 +108,6 @@ class LedBackpack(bus: Bus, number: Int) {
 
 
 object LedBackpack {
-  
   private val SYSTEM_SETUP_REGISTER : Int = 0x20
   private val DIMMING_REGISTER      : Int = 0xe0
   private val DISPLAY_SETUP_REGISTER: Int = 0x80
