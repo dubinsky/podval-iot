@@ -27,7 +27,7 @@ class LedBackpack(bus: Bus, number: Int) {
   require(0 <= number && number <= 7, "Invalid LED backpack address: " + number)
 
 
-  val address = bus.address(0x70 + number)
+  private[this] val address = bus.address(0x70 + number)
 
 
   // XXX remove "buffer"

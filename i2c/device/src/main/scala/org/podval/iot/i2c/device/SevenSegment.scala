@@ -22,8 +22,10 @@ import org.podval.iot.i2c.core.Bus
 /**
  * Four-character, seven segment displays available from Adafruit.
  */
-// XXX containment, not inheritance...
-final class SevenSegment(bus: Bus, number: Int = 0) extends LedBackpack(bus, number) {
+final class SevenSegment(bus: Bus, number: Int = 0) {
+
+  private[this] val backpack = new LedBackpack(bus, number)
+
 
   def digit0_=(value: Int) = writeDigit(0, value)
   private[this] def digit0: Unit = {}
@@ -78,19 +80,22 @@ final class SevenSegment(bus: Bus, number: Int = 0) extends LedBackpack(bus, num
   // Sets a single decimal or hexadecimal value (0..9 and A..F)
   private[this] def writeDigit(charNumber: Int, value: Int) {
     require(0 <= value && value <= 0x0f, "Invalid value: " + value)
-    setChar(charNumber,  SevenSegment.Digits(value))
+    backpack.setChar(charNumber,  SevenSegment.Digits(value))
   }
 
   
-  private[this] def writeDot(charNumber: Int, value: Boolean) = setBit(charNumber, 0x80, value)
+  private[this] def writeDot(charNumber: Int, value: Boolean) = backpack.setBit(charNumber, 0x80, value)
 
   // 
   // Enables or disables the colon character
   // Warning: This function assumes that the colon is character '2',
   // which is the case on 4 char displays, but may need to be modified
   // if another display type is used
-  def colon_=(value: Boolean = true) = setChar(2, if (value) 0xffff else 0)
+  def colon_=(value: Boolean = true) = backpack.setChar(2, if (value) 0xffff else 0)
   def colon: Unit = {}
+
+
+  def update = backpack.update
 }
 
 
