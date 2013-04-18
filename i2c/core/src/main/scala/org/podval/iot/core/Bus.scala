@@ -28,10 +28,8 @@ import org.podval.iot.system.Fd
  */
 final class Bus(val i2c: I2c, val number: Int) {
   
-  if (number < 0) {
-    throw new IllegalArgumentException("Invalid bus number: " + number)
-  }
-  
+  require(number >= 0, "Invalid bus number: " + number)
+
   
   val file: RandomAccessFile = new RandomAccessFile(busDevice, "rw")
   
@@ -54,35 +52,27 @@ final class Bus(val i2c: I2c, val number: Int) {
   def address(value: Int): Address = new Address(this, value)
 
 
-  def getFuncs: Long = I2c.getFuncs(fd)
+  def getFunctions: Long = I2c.getFunctions(fd)
 
 
   // XXX synchronize and reuse structures?
 
   def writeQuick(address: Int, data: Byte) = I2c.writeQuick(fd, address, data)
-  def readByte(address: Int): Byte = I2c.readByte(fd, address)
-  def writeByte(address: Int, data: Byte) = I2c.writeByte(fd, address, data)
-  def readByteData(address: Int, command: Byte): Byte = I2c.readByteData(fd, address, command)
-  def writeByteData(address: Int, command: Byte, data: Byte) = I2c.writeByteData(fd, address, command, data)
-  def readWordData(address: Int, command: Byte): Short = I2c.readWordData(fd, address, command)
-  def writeWordData(address: Int, command: Byte, data: Short) = I2c.writeWordData(fd, address, command, data)
-  def processCall(address: Int, command: Byte, data: Short): Short = I2c.processCall(fd, address, command, data)
-  def readBlockData(address: Int, command: Byte): Seq[Byte] = I2c.readBlockData(fd, address, command)
-  def writeBlockData(address: Int, command: Byte, data: Seq[Byte]) = I2c.writeBlockData(fd, address, command, data)
-  def readBlockDataI2c(address: Int, command: Byte, length: Byte): Seq[Byte] = I2c.readBlockDataI2c(fd, address, command, length);
-  // XXX rename writeBytes... Figure out why non-I2C flavor does not work...
-  def writeBlockDataI2c(address: Int, command: Byte, data: Seq[Byte]) = I2c.writeBlockDataI2c(fd, address, command, data)
-  def blockProcessCall(address: Int, command: Byte, data: Seq[Byte]) = I2c.blockProcessCall(fd, address, command, data)
 
-//  def readByteSimple(address: Int): Byte = I2c.readByteSimple(fd, file, address)
-//  def writeByteSimple(address: Int, data: Byte) = I2c.writeByteSimple(fd, file, address, data)
-  def readShort(address: Int): Short = I2c.readShort(fd, file, address)
-//  def writeShort(address: Int, data: Short) = I2c.writeShort(fd, file, address, data)
-//  def writeByteSimple(address: Int, register: Byte, data: Byte) = I2c.writeByteSimple(fd, file, address, register, data)
-//  def writeShort(address: Int, register: Byte, data: Short) = I2c.writeShort(fd, file, address, register, data)
-//  def writeBytesSimple(address: Int, register: Byte, data: Seq[Byte]): Unit = I2c.writeBytesSimple(fd, file, address, register, data)
-  def writeBytesSimple(address: Int, data: Seq[Byte]): Unit = I2c.writeBytesSimple(fd, file, address, data)
-  def readBytes(address: Int, length: Int): Seq[Byte] = I2c.readBytes(fd, file, address, length)
+  def writeByte(address: Int, data: Byte) = I2c.writeByte(fd, address, data)
+  def writeByte(address: Int, command: Byte, data: Byte) = I2c.writeByte(fd, address, command, data)
+  def writeWord(address: Int, data: Short) = I2c.writeWord(fd, address, data)
+  def writeWord(address: Int, command: Byte, data: Short) = I2c.writeWord(fd, address, command, data)
+  def writeBytes(address: Int, data: Seq[Byte]) = I2c.writeBytes(fd, address, data)
+  def writeBytes(address: Int, command: Byte, data: Seq[Byte]) = I2c.writeBytes(fd, address, command, data)
+
+  def readByte(address: Int): Byte = I2c.readByte(fd, address)
+  def readByte(address: Int, command: Byte): Byte = I2c.readByte(fd, address, command)
+  def readWord(address: Int): Short = I2c.readWord(fd, address)
+  def readWord(address: Int, command: Byte): Short = I2c.readWord(fd, address, command)
+  // XXX switch to I2c.readBytes(fd, address, length) when it works...
+  def readBytes(address: Int, length: Byte): Seq[Byte] = I2c.readBytes(fd, file, address, length)
+  def readBytes(address: Int, command: Byte, length: Byte): Seq[Byte] = I2c.readBytes(fd, address, command, length)
 
   def setSlaveAddress(address: Int): Unit = I2c.setSlaveAddress(fd, address)
 }

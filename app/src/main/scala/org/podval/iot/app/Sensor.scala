@@ -17,9 +17,8 @@
 package org.podval.iot.app
 
 import org.podval.iot.i2c.device.{Sht21, Mpl115a2, SevenSegment}
-
-import java.util.Date
 import org.podval.iot.platform.raspberrypi.RaspberryPi
+import java.util.Date
 
 
 object Sensor {
@@ -29,8 +28,8 @@ object Sensor {
     val bus = pi.i2c
     val sht21 = new Sht21(bus)
     val sht21Display = new SevenSegment(bus, 0)
-//    val mpl115a2 = new Mpl115a2(bus)
-//    val mpl115a2Display = new SevenSegment(bus, 1)
+    val mpl115a2 = new Mpl115a2(bus)
+    val mpl115a2Display = new SevenSegment(bus, 1)
 
     val timeDisplay = new SevenSegment(pi.i2c, 2)
 
@@ -38,26 +37,26 @@ object Sensor {
       val temperature = math.max(0, math.round(sht21.temperature))
       val humidity = math.max(0, math.round(sht21.humidity))
 
-      sht21Display.left = temperature
-      sht21Display.leftDot = true
+      sht21Display.setLeft(temperature)
+      sht21Display.setLeftDot(true)
 
-      sht21Display.right = humidity
-      sht21Display.rightDot = true
+      sht21Display.setRight(humidity)
+      sht21Display.setRightDot(true)
 
       sht21Display.update
 
-//      val temperature2 = math.max(0, math.round(mpl115a2.temperature))
-//      mpl115a2Display.left = temperature2
-//      mpl115a2Display.leftDot = true
+      val temperature2 = math.max(0, math.round(mpl115a2.temperature))
+      mpl115a2Display.setLeft(temperature2)
+      mpl115a2Display.setLeftDot(true)
 
-//      mpl115a2Display.update
+      mpl115a2Display.update
 
 
       val date = new Date
 
-      timeDisplay.left = date.getHours
-      timeDisplay.right = date.getMinutes
-      timeDisplay.colon = (date.getSeconds % 2) == 0
+      timeDisplay.setLeft(date.getHours)
+      timeDisplay.setRight(date.getMinutes)
+      timeDisplay.setColon((date.getSeconds % 2) == 0)
       timeDisplay.update
 
       Thread.sleep(1000)

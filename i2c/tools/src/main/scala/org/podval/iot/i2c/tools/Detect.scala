@@ -162,7 +162,7 @@ final class Detect {
 
 
   private[this] def printFunctionality(bus: Bus) {
-    val bits = bus.getFuncs
+    val bits = bus.getFunctions
     for (function <- Functions.all) {
       println(("%-32s "  format function.name) + (if (function.isSupported(bits)) "yes" else "no"))
     }
@@ -170,7 +170,7 @@ final class Detect {
 
 
   private[this] def scan(bus: Bus, mode: Detect.Mode, first: Int, last: Int) {
-    val funcs = bus.getFuncs
+    val funcs = bus.getFunctions
     val quickAvailable = Functions.writeQuick.isSupported(funcs)
     val readAvailable = Functions.readByte.isSupported(funcs)
 

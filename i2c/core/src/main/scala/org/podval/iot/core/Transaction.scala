@@ -37,7 +37,7 @@ final class Transaction {
   def blockBrokenI2c: Transaction = size(6)
   def blockProcCall : Transaction = size(7)
   def blockDataI2c  : Transaction = size(8)
-  def blockI2c(length: Byte) = if (length == 32) blockBrokenI2c else blockDataI2c
+  def blockI2c(length: Byte): Transaction = if (length == 32) blockBrokenI2c else blockDataI2c
   private[this] def size(value: Byte): Transaction = { data.size = value; this }
 
 
@@ -68,7 +68,7 @@ final class Transaction {
 
 
   def setLength(value: Byte): Transaction = {
-    TransactionBuffer.checkLength(value)
+    Transaction.checkLength(value)
     data.buffer.setType(classOf[Array[Byte]])
     data.buffer.block(0) = value
     this
@@ -78,7 +78,7 @@ final class Transaction {
   def getBytes: Seq[Byte] = {
     data.buffer.setType(classOf[Array[Byte]])
     val length = data.buffer.block(0)
-    TransactionBuffer.checkLength(length)
+    Transaction.checkLength(length)
     data.buffer.block.tail.take(length)
   }
 
@@ -92,23 +92,12 @@ final class Transaction {
   }
 
 
-  def run(file: Int, address: Int, command: Byte): Transaction = run(file, address, command, null)
-
-  def run(file: Int, address: Int, command: Byte, message: String): Transaction = {
+  def run(file: Int, address: Int, command: Byte): Transaction = {
     I2c.setSlaveAddress(file, address)
 
     data.command = command
 
-    if (message != null) {
-      // Define "jna.dump_memory" property for memory dump
-      data.write
-      println(message + " transaction.run: data " + data.toString)
-
-      data.buffer.write
-      println("buffer " + data.buffer.toString)
-    }
-
-    val result = CLib.library.ioctl(file, Transaction.smbusAccess, data)
+    val result = CLib.library.ioctl(file, 0x0720, data)
 
     if (result != 0) throw new I2cExeption(result)
 
@@ -119,7 +108,8 @@ final class Transaction {
 
 object Transaction {
 
-  private val smbusAccess = 0x0720  /* SMBus-level access */
+  def checkLength(length: Byte) =
+    require (1 <= length && length <= TransactionBuffer.BLOCK_MAX, "Length must be between 1 and " + TransactionBuffer.BLOCK_MAX + ", not " + length)
 
 
   def apply(transaction: Transaction): Transaction = if (transaction != null) transaction else new Transaction

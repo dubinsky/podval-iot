@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Podval Group.
+ * Copyright 2012-2013 Podval Group.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,72 +27,38 @@ final class SevenSegment(bus: Bus, number: Int = 0) {
   private[this] val backpack = new LedBackpack(bus, number)
 
 
-  def digit0_=(value: Int) = writeDigit(0, value)
-  private[this] def digit0: Unit = {}
-
-  def dot0_=(value: Boolean) = writeDot(0, value)
-  private[this] def dot0: Unit = {}
+  def setDigit(charNumber: Int, value: Int) = setCode(charNumber, SevenSegment.getDigitCode(value))
 
 
-  def digit1_=(value: Int) = writeDigit(1, value)
-  private[this] def digit1: Unit = {}
-
-  def dot1_=(value: Boolean) = writeDot(1, value)
-  private[this] def dot1: Unit = {}
+  def setDot(charNumber: Int, value: Boolean) = backpack.setBit(correctNumber(charNumber), 0x80.toByte, value)
 
 
-  def digit2_=(value: Int) = writeDigit(3, value)
-  private[this] def digit2: Unit = {}
-
-  def dot2_=(value: Boolean) = writeDot(3, value)
-  private[this] def dot2: Unit = {}
-
-
-  def digit3_=(value: Int) = writeDigit(4, value)
-  private[this] def digit3: Unit = {}
-
-  def dot3_=(value: Boolean) = writeDot(4, value)
-  private[this] def dot3: Unit = {}
-
-
-  def left_=(value: Int) = {
-    digit0 = value / 10
-    digit1 = value % 10
-  }
-  def left: Unit = {}
-
-
-  def leftDot_=(value: Boolean) = dot1 = value
-  def leftDot: Unit = {}
-
-
-  def right_=(value: Int) = {
-    digit2 = value / 10
-    digit3 = value % 10
-  }
-  def right: Unit = {}
-
-
-  def rightDot_=(value: Boolean) = dot3 = value
-  def rightDot: Unit = {}
-
-
-  // Sets a single decimal or hexadecimal value (0..9 and A..F)
-  private[this] def writeDigit(charNumber: Int, value: Int) {
-    require(0 <= value && value <= 0x0f, "Invalid value: " + value)
-    backpack.setByte(charNumber,  SevenSegment.Digits(value).toByte)
-  }
-
-  
-  private[this] def writeDot(charNumber: Int, value: Boolean) = backpack.setBit(charNumber, 0x80.toByte, value)
-
-  // 
   // Enables or disables the colon character
   // Warning: This function assumes that the colon is character '2',
   // which is the case on 4 char displays, but may need to be modified
   // if another display type is used
-  def colon_=(value: Boolean = true) = backpack.setWord(2, (if (value) 0xffff else 0).toShort)
-  def colon: Unit = {}
+  def setColon(value: Boolean = true) = backpack.setWord(SevenSegment.right, (if (value) 0xffff else 0).toShort)
+
+
+  def setCode(charNumber: Int, value: Byte) = backpack.setByte(correctNumber(charNumber),  value)
+
+
+  private[this] def correctNumber(charNumber: Int): Int = {
+    require(0 <= charNumber && charNumber <= 3, "Invalid digit number " + charNumber)
+    if (charNumber < SevenSegment.right) charNumber else charNumber+1
+  }
+
+
+  def setLeft(value: Int) = setHalf(SevenSegment.left, value)
+  def setRight(value: Int) = setHalf(SevenSegment.right, value)
+  def setLeftDot(value: Boolean) = setDot(SevenSegment.left+1, value)
+  def setRightDot(value: Boolean) = setDot(SevenSegment.right+1, value)
+
+
+  private[this] def setHalf(digit: Int, value: Int) = {
+    setDigit(digit  , value / 10)
+    setDigit(digit+1, value % 10)
+  }
 
 
   def update = backpack.update
@@ -100,6 +66,15 @@ final class SevenSegment(bus: Bus, number: Int = 0) {
 
 
 object SevenSegment {
+  private val left = 0
+  private val right = 2
+
+
+  def getDigitCode(digit: Int): Byte = {
+    require(0 <= digit && digit <= 0x0f, "Invalid value: " + digit)
+    SevenSegment.Digits(digit).toByte
+  }
+
   // Hexadecimal character lookup table (row 1 = 0..9, row 2 = A..F)
   val Digits: Array[Int] = Array(
     0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F,

@@ -73,7 +73,7 @@ class LedBackpack(bus: Bus, number: Int) {
   }
 
 
-  def update = address.writeBlockDataI2c(0, bytes)
+  def update = address.writeBytes(0, bytes)
 
 
   def setBrightness(value: Int) {
@@ -86,7 +86,7 @@ class LedBackpack(bus: Bus, number: Int) {
     writeByte0(LedBackpack.DISPLAY_SETUP_REGISTER | 0x01 | (value.code << 1))
 
 
-  private[this] def writeByte0(command: Int) = address.writeByteData(command.toByte, 0x00)
+  private[this] def writeByte0(command: Int) = address.writeByte(command.toByte, 0x00)  // XXX do I need this 0 at the end?
 }
 
 

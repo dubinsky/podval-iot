@@ -23,6 +23,7 @@ final class RaspberryPi {
 
   lazy val revision: Int = {
     // XXX: revision is available from /proc/cpuinfo after keyword "Revision"
+    // XXX also: in /proc/cmdline, after bcm2708.boardrev
     2
   }
 

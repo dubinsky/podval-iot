@@ -24,28 +24,19 @@ final class Sht21(bus: Bus) {
   val address = bus.address(0x40)
 
 
-  def temperature: Float = convertTemperature(readMeasurement(0xf3, false))
-  
-
+  def temperature    : Float = convertTemperature(readMeasurement(0xf3, false))
   def temperatureHold: Float = convertTemperature(readMeasurement(0xe3, true))
-  
-
-  def humidity: Float = convertHumidity(readMeasurement(0xf5, false))
-  
-
-  def humidityHold: Float = convertHumidity(readMeasurement(0xe5, true))
-
-
   private[this] def convertTemperature(value: Int) = convert(value, -46.85f, 175.72f)
 
-
+  def humidity: Float = convertHumidity(readMeasurement(0xf5, false))
+  def humidityHold: Float = convertHumidity(readMeasurement(0xe5, true))
   private[this] def convertHumidity(value: Int) = convert(value, -6.0f, 125.0f)
 
 
   private[this] def convert(value: Int, a: Float, b: Float): Float = a + b * value / 65535.0f
 
 
-  private[this] def readMeasurement(command: Int, hold: Boolean) = {
+  private[this] def readMeasurement(command: Int, hold: Boolean): Int = {
     address.writeByte(command.toByte)
     
     if (hold == false) {
@@ -53,8 +44,8 @@ final class Sht21(bus: Bus) {
       Thread.sleep(85)
     }
     
-    val bytes = address.readBytes(3) // XXX: readBlockDataI2c(0, 3)
-    println("***** measurement " + bytes.mkString(","))
+    val bytes = address.readBytes(3)
+
     // XXX: Signal failed read better!
     if (bytes.isEmpty) 0 else {
       val result = (bytes(0) << 8) | (bytes(1) & 0xfc)

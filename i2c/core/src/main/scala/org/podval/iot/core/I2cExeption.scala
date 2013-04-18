@@ -18,4 +18,7 @@ package org.podval.iot.i2c.core
 
 
 // XXX generalize and move into the "system"
-class I2cExeption(val result: Int) extends Exception
+class I2cExeption(val result: Int) extends Exception {
+
+  override def toString: String = "I2C error: " + result
+}
