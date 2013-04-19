@@ -22,9 +22,11 @@ import org.podval.iot.i2c.core.Bus
 /**
  * Barometric Pressure/Temperature Sensor from Adafruit.
  *
+ * see https://github.com/adafruit/Adafruit_MPL115A2/blob/master/Adafruit_MPL115A2.cpp
+ *
  * @param bus
  */
-// XXX conversions are wrong!!!
+// XXX Does not work!!!
 final class Mpl115a2(bus: Bus) {
 
   private[this] val address = bus.address(0x60)

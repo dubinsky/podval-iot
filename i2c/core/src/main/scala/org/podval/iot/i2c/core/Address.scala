@@ -25,7 +25,8 @@ final class Address(val bus: Bus, val address: Int) {
   override def toString = "address " + address + " on " + bus
 
 
-  def register(value: Byte): Register = new Register(this, value)
+  def byteRegister(value: Byte): Register = new ByteRegister(this, value)
+  def wordRegister(value: Byte): Register = new WordRegister(this, value)
 
 
   def writeQuick(data: Byte) = bus.writeQuick(address, data)

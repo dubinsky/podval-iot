@@ -17,7 +17,8 @@
 package org.podval.iot.i2c.core
 
 
-final class Register(val address: Address, val register: Byte) {
+// XXX generalize for the non-I2C case...
+abstract class Register(val address: Address, val register: Byte) {
 
   require(0 <= register, "Invalid i2c register " + register)
 
@@ -25,11 +26,37 @@ final class Register(val address: Address, val register: Byte) {
   override def toString = "register " + register + " of " + address
 
 
-  def writeByte(data: Byte) = address.writeByte(register, data)
-  def writeWord(data: Short) = address.writeWord(register, data)
   def writeBytes(data: Seq[Byte]) = address.writeBytes(register, data)
 
-  def readByte: Byte = address.readByte(register)
-  def readWord: Short = address.readWord(register)
+
   def readBytes(length: Byte): Seq[Byte] = address.readBytes(register, length)
+
+
+  def read(bit: Int): Boolean
+
+
+  def write: Unit
+
+
+  // XXX submerge; surface setAndWrite?
+  def writeForBit(bit: Int): Unit
+
+
+  def set(bit: Int, value: Boolean)
+
+
+  def set(value: Boolean)
+
+
+  def get(bit: Int): Boolean
+
+
+  final def setAndWriteIfChanged(bit: Int, value: Boolean) {
+    val changed = get(bit) != value
+    set(bit, value)
+    if (changed) writeForBit(bit)
+  }
+
+
+  def load: Unit
 }
