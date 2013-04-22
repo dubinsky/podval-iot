@@ -16,7 +16,7 @@
 
 package org.podval.iot.platform.raspberrypi
 
-import org.podval.iot.i2c.core.I2c
+import org.podval.iot.i2c.I2c
 
 
 final class RaspberryPi {

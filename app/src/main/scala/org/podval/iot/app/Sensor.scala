@@ -16,9 +16,9 @@
 
 package org.podval.iot.app
 
-import org.podval.iot.i2c.device.{Sht21, Mpl115a2, SevenSegment}
 import org.podval.iot.platform.raspberrypi.RaspberryPi
 import java.util.Date
+import org.podval.iot.device.i2c.{Sht21, SevenSegment, Mpl115a2}
 
 
 object Sensor {

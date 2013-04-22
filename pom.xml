@@ -207,8 +207,11 @@
     <modules>
         <module>app</module>
         <module>gpio</module>
+        <module>device</module>
         <module>i2c</module>
         <module>platform</module>
+        <module>register</module>
         <module>system</module>
+        <module>tools</module>
     </modules>
 </project>

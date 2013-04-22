@@ -9,16 +9,12 @@
     </parent>
 
     <groupId>org.podval.iot</groupId>
-    <artifactId>org.podval.iot.i2c</artifactId>
-    <name>Internet of Things: I2C</name>
+    <artifactId>device</artifactId>
+    <name>Internet of Things: Devices</name>
     <version>0.1-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.podval.iot</groupId>
-            <artifactId>org.podval.iot.system</artifactId>
-            <version>0.1-SNAPSHOT</version>
-        </dependency>
-    </dependencies>
+    <modules>
+        <module>i2c</module>
+    </modules>
 </project>

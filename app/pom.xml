@@ -36,8 +36,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.podval.iot.i2c</groupId>
-            <artifactId>org.podval.iot.i2c.device</artifactId>
+            <groupId>org.podval.iot.device</groupId>
+            <artifactId>org.podval.iot.device.i2c</artifactId>
             <version>0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
