@@ -16,17 +16,31 @@
 
 package org.podval.iot.i2c
 
+import org.podval.iot.register.WordRegister
 
-abstract class Register(val address: Address, val register: Byte) extends org.podval.iot.register.Register {
+
+final class WordRegisterI2c(address: Address, register: Byte) extends WordRegister {
 
   require(0 <= register, "Invalid i2c register " + register)
 
 
-  override def toString = "register " + register + " of " + address
+  override def toString = "word register " + register + " of " + address
 
 
-  def writeBytes(data: Seq[Byte]) = address.writeBytes(register, data)
+  override def write(data: Short): Unit = address.writeWord(register, data)
 
 
-  def readBytes(length: Byte): Seq[Byte] = address.readBytes(register, length)
+  def writeLsb = address.writeByte(register, get.toByte)
+
+
+  def writeMsb = address.writeByte((register+1).toByte, (get >> 8).toByte)
+
+
+  override def read: Short = address.readWord(register)
+
+
+  def readLsb: Byte = address.readByte(register)
+
+
+  def readMsb: Byte = address.readByte((register+1).toByte)
 }

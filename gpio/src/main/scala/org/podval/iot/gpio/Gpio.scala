@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Podval Group.
+ * Copyright 2012-2013 Podval Group.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,13 @@
  * limitations under the License.
  */
 
-/**
- * Memory-mapped interface to the GPIO functionality.
- */
 package org.podval.iot.gpio
 
 
 abstract class Gpio {
 
   def pin(number: Int): Pin = {
-    if (number < 0 || number >= numPins) {
-      throw new IllegalArgumentException("Invalid pin number " + number)
-    }
+    checkPin(number)
 
     if (pins(number) == null) {
       pins(number) = createPin(number)
@@ -35,11 +30,14 @@ abstract class Gpio {
   }
 
 
-  val numPins: Int
+  def numPins: Int
 
 
   protected def createPin(number: Int): Pin
 
 
   private[this] val pins: Array[Pin] = new Array[Pin](numPins)
+
+
+  protected final def checkPin(pin: Int) = require(0 <= pin && pin < numPins, "Invalid pin number %s" format pin)
 }

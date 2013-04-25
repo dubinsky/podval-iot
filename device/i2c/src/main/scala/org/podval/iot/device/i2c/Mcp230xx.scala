@@ -16,7 +16,8 @@
 
 package org.podval.iot.device.i2c
 
-import org.podval.iot.i2c.{Register, Address}
+import org.podval.iot.gpio.{Gpio, RegisterGpio}
+import org.podval.iot.i2c.{Address, ByteRegisterI2c, WordRegisterI2c}
 
 
 /**
@@ -24,85 +25,27 @@ import org.podval.iot.i2c.{Register, Address}
  *
  * @param address
  */
-// XXX Expose Gpio/Pin interface!
-abstract class Mcp230xx(address: Address) {
+final class Mcp23008(address: Address) {
 
-  def numGpios: Int
-
-
-  protected val direction: Register
-  protected val pullUp: Register
-  protected val output: Register
-  protected val input: Register
+  val direction = new ByteRegisterI2c(address, 0x00)
+  val pullUp    = new ByteRegisterI2c(address, 0x06)
+  val output    = new ByteRegisterI2c(address, 0x0A)
+  val input     = new ByteRegisterI2c(address, 0x09)
 
 
-  // Default: all pins are input, no pull-ups, output values read from the chip.
-  direction.set(true)
-  direction.write
-  pullUp.set(false)
-  pullUp.write
-  output.load
-
-
-  def setInput(pin: Int, value: Boolean) = {
-    checkPin(pin)
-    direction.set(pin, value)
-    direction.writeForBit(pin)
-  }
-
-
-  def setPullUp(pin: Int, value: Boolean) {
-    checkPin(pin)
-    checkInput(pin, true)
-    pullUp.set(pin, value)
-    pullUp.writeForBit(pin)
-  }
-
-
-  def read(pin: Int): Boolean = {
-    checkPin(pin)
-    checkInput(pin, true)
-    input.read(pin)
-  }
-
-
-  def write(pin: Int, value: Boolean) {
-    checkPin(pin)
-    checkInput(pin, false)
-    output.setAndWriteIfChanged(pin, value)
-  }
-
-
-  private[this] def checkPin(pin: Int) =
-    require(0 <= pin && pin < numGpios, "Invalid pin %s; must be from 0 to %s" format (numGpios-1))
-
-
-  private[this] def checkInput(pin: Int, value: Boolean) =
-    require(direction.get(pin) == value, "Pin %s not set to %s" format (pin, if (value) "input" else "output"))
-}
-
-
-
-final class Mcp23008(address: Address) extends Mcp230xx(address) {
-
-  override def numGpios: Int = 8
-
-  protected val direction = address.byteRegister(0x00)
-  protected val pullUp = address.byteRegister(0x06)
-  protected val output = address.byteRegister(0x0A)
-  protected val input = address.byteRegister(0x09)
+  val gpio: Gpio = new RegisterGpio(8, direction, pullUp, output, input)
 }
 
 
 
 // XXX write Seq[Byte] to either of the GPIO registers...
-final class Mcp23017(address: Address) extends Mcp230xx(address) {
+final class Mcp23017(address: Address) {
 
-  override def numGpios = 16
+  val direction = new WordRegisterI2c(address, 0x00)
+  val pullUp    = new WordRegisterI2c(address, 0x0C)
+  val output    = new WordRegisterI2c(address, 0x14)
+  val input     = new WordRegisterI2c(address, 0x12)
 
 
-  protected val direction = address.wordRegister(0x00)
-  protected val pullUp = address.wordRegister(0x0C)
-  protected val output = address.wordRegister(0x14)
-  protected val input = address.wordRegister(0x12)
+  val gpio: Gpio = new RegisterGpio(8, direction, pullUp, output, input)
 }

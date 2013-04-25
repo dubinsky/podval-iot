@@ -16,17 +16,19 @@
 
 package org.podval.iot.i2c
 
+import org.podval.iot.register.ByteRegister
 
-abstract class Register(val address: Address, val register: Byte) extends org.podval.iot.register.Register {
+
+final class ByteRegisterI2c(val address: Address, val register: Byte) extends ByteRegister {
 
   require(0 <= register, "Invalid i2c register " + register)
 
 
-  override def toString = "register " + register + " of " + address
+  override def toString = "byte register " + register + " of " + address
 
 
-  def writeBytes(data: Seq[Byte]) = address.writeBytes(register, data)
+  override def write(data: Byte) = address.writeByte(register, data)
 
 
-  def readBytes(length: Byte): Seq[Byte] = address.readBytes(register, length)
+  override def read: Byte = address.readByte(register)
 }

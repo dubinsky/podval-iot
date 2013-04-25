@@ -20,5 +20,11 @@
             <artifactId>org.podval.iot.system</artifactId>
             <version>0.1-SNAPSHOT</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.podval.iot</groupId>
+            <artifactId>org.podval.iot.register</artifactId>
+            <version>0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 </project>

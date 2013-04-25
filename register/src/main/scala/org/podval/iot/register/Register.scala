@@ -16,13 +16,38 @@
 
 package org.podval.iot.register
 
-/**
- * Created with IntelliJ IDEA.
- * User: dub
- * Date: 4/22/13
- * Time: 2:37 AM
- * To change this template use File | Settings | File Templates.
- */
-class Register {
 
+trait Register {
+
+  def size: Int
+
+
+  def set(bit: Int, value: Boolean): Unit
+
+
+  def set(value: Boolean): Unit
+
+
+  def write(bit: Int, value: Boolean): Unit
+
+
+  def write(value: Boolean): Unit
+
+
+  def write: Unit
+
+
+  def flush: Unit
+
+
+  def get(bit: Int): Boolean
+
+
+  def read(bit: Int): Boolean
+
+
+  def load: Unit
+
+
+  protected final def checkBit(bit: Int) = require(0 <= bit && bit <= size-1, "Invalid bit number %s; must be between 0 and %s" format (bit, size-1))
 }
