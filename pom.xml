@@ -207,6 +207,7 @@
     <modules>
         <module>app</module>
         <module>gpio</module>
+        <module>cosm</module>
         <module>device</module>
         <module>i2c</module>
         <module>platform</module>

@@ -46,7 +46,7 @@ object Sensor {
       sht21Display.update
 
       val temperature2 = math.max(0, math.round(mpl115a2.temperature))
-      mpl115a2Display.setLeft(temperature2)
+//      mpl115a2Display.setLeft(temperature2) // conversions are so wrong that the "digit" is 21...
       mpl115a2Display.setLeftDot(true)
 
       mpl115a2Display.update
