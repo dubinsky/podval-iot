@@ -66,6 +66,7 @@ final class Ads1x15(bus: Bus, number: Int) {
     //    bytes = [(config >> 8) & 0xFF, config & 0xFF]
     //  self.i2c.writeList(self.__ADS1015_REG_POINTER_CONFIG, bytes)
     address.writeBytes(Ads1x15.__ADS1015_REG_POINTER_CONFIG.toByte, Seq[Byte](((config >> 8) & 0xff).toByte, (config & 0xff).toByte))
+//    address.writeWord(Ads1x15.__ADS1015_REG_POINTER_CONFIG.toByte, config.toShort)
 
     // Wait for the ADC conversion to complete
     // The minimum delay depends on the sps: delay >= 1/sps
@@ -78,11 +79,11 @@ final class Ads1x15(bus: Bus, number: Int) {
     // Read the conversion results
     //    result = self.i2c.readList(self.__ADS1015_REG_POINTER_CONVERT, 2)
     val result = address.readBytes(Ads1x15.__ADS1015_REG_POINTER_CONVERT.toByte, 2)
-    println("raw ADC: " + result(0) + " " + result(1) + " " + ((result(0) << 8) | (result(1) & 0xff)))
+
     //  if (self.ic == self.__IC_ADS1015):
     //  # Shift right 4 bits for the 12-bit ADS1015 and convert to mV
     //  return ( ((result[0] << 8) | (result[1] & 0xFF)) >> 4 )*pga/2048.0
-    ((result(0) << 8) | (result(1) & 0xff))*pga/2048.0
+    (((result(0) << 8) | (result(1) & 0xff)) >> 4)*pga/2048
     //  else:
     //  # Return a mV value for the ADS1115
     //  # (Take signed values into account as well)

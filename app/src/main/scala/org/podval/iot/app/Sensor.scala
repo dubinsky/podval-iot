@@ -32,6 +32,7 @@ class Sensor {
 
   def run {
     val feed = new Cosm(cosmKey).getFeed(cosmFeed)
+    val temperature2Datastream = feed.getDatastream(0)
     val temperatureDatastream = feed.getDatastream(1)
     val humidityDatastream = feed.getDatastream(2)
 
@@ -42,9 +43,10 @@ class Sensor {
     val sht21Display = new SevenSegment(bus, 0)
 
     val ads1015 = new Ads1x15(bus, 0)
+    val ads1015Display = new SevenSegment(bus, 1)
 
 //    val mpl115a2 = new Mpl115a2(bus)
-//    val mpl115a2Display = new SevenSegment(bus, 1)
+//    val mpl115a2Display = new SevenSegment(bus, 3)
 
     val timeDisplay = new SevenSegment(bus, 2)
 
@@ -53,12 +55,8 @@ class Sensor {
       val seconds = now.getSeconds
 
       val temperature = sht21.temperature
-
       val humidity = sht21.humidity
-
-
-      println("ADC (milliVolts): " + ads1015.readADCSingleEnded(3))
-
+      val temperature2 = Tmp36.toCelsius(ads1015.readADCSingleEnded(3))
 
       sht21Display.setLeft(toDisplay(temperature))
       sht21Display.setLeftDot(true)
@@ -67,6 +65,10 @@ class Sensor {
       sht21Display.setRightDot(true)
 
       sht21Display.update
+
+      ads1015Display.setLeft(toDisplay(temperature2))
+      ads1015Display.setLeftDot(true)
+      ads1015Display.update
 
       //val temperature2 = math.max(0, math.round(mpl115a2.temperature))
       //      mpl115a2Display.setLeft(temperature2) // conversions are so wrong that the "digit" is 21...
@@ -79,13 +81,17 @@ class Sensor {
       timeDisplay.update
 
       if ((seconds % 30) == 0) {
-        temperatureDatastream.addDatapoint(Datapoint(now, temperature))
-        humidityDatastream.addDatapoint(Datapoint(now, humidity))
+        temperatureDatastream.addDatapoint(Datapoint(now, toCosm(temperature)))
+        temperature2Datastream.addDatapoint(Datapoint(now, toCosm(temperature2)))
+        humidityDatastream.addDatapoint(Datapoint(now, toCosm(humidity)))
       }
 
       Thread.sleep(1000)
     }
   }
+
+
+  def toCosm(value: Float): Float = math.round(value*10f)/10f
 
 
   def toDisplay(value: Float): Int = math.max(0, math.round(value))
@@ -115,4 +121,11 @@ object Sensor {
         parser.printUsage(System.err)
     }
   }
+}
+
+
+object Tmp36 {
+
+  // 750 mV at 25 degrees Celsius; 10 mV = 1 degree
+  def toCelsius(millivolts: Int): Float = 25.0f + (millivolts - 750) / 10
 }
