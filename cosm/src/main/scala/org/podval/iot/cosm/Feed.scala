@@ -22,8 +22,6 @@ import java.net.HttpURLConnection
 final class Feed(cosm: Cosm, id: Int) {
 
   // create: POST to   http://api.cosm.com/v2/feeds
-  //  Attribute	Description	Required?	User-settable
-
 //  val title: String
 //  val updated: String
 //  val creator: String // URL

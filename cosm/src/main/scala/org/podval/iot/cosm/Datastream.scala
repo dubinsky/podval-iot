@@ -16,10 +16,7 @@
 
 package org.podval.iot.cosm
 
-import java.util.Date
 import java.net.HttpURLConnection
-import java.io.{BufferedWriter, OutputStreamWriter}
-import xml.Node
 
 
 final class Datastream(feed: Feed, id: Int) {
@@ -27,32 +24,32 @@ final class Datastream(feed: Feed, id: Int) {
   def getConnection(suffix: String): HttpURLConnection = feed.getConnection("/datastreams/" + id + suffix)
 
 
-  def addDatapoint(timestamp: Date, value: Float): Unit = {
-    val connection = getConnection("/datapoints/")
-    connection.setRequestMethod("POST")
-    connection.setDoInput(true)
-    connection.setDoOutput(true)
+  // XXX I failed to make Cosm understand XML format of requests, and settled for JSON -
+  // especially since the only thing I need right now is to be able to post a datapoint :)
+  def addDatapoint(datapoint: Datapoint): Unit = {
+//    val data: Node =
+//      <eeml xmlns="http://www.eeml.org/xsd/0.5.1"
+//            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+//            version="0.5.1"
+//            xsi:schemaLocation="http://www.eeml.org/xsd/0.5.1 http://www.eeml.org/xsd/0.5.1/0.5.1.xsd">
+//        <environment>
+//          <data>
+//            <datapoints>
+//              <value at={Iso8601,toString(datapoint.timestamp)}>{datapoint.value}</value>
+//            </datapoints>
+//          </data>
+//        </environment>
+//      </eeml>
 
-    val data: Node =
-      <eeml xmlns="http://www.eeml.org/xsd/0.5.1"
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            version="0.5.1"
-            xsi:schemaLocation="http://www.eeml.org/xsd/0.5.1 http://www.eeml.org/xsd/0.5.1/0.5.1.xsd">
-        <environment>
-          <data>
-            <datapoints>
-              <value at={timestamp.toString}>{value}</value>
-            </datapoints>
-          </data>
-        </environment>
-      </eeml>
+    val data: String =
+      "{\n" +
+      "  \"datapoints\":[\n" +
+      "    {\"at\":\"" + Iso8601.toString(datapoint.timestamp) + "\",\"value\":\"" + datapoint.value + "\"}\n" +
+      "  ]\n" +
+      "}\n"
 
-    val os = connection.getOutputStream
-    val writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"))
-    writer.write(data.toString)
-    writer.close
-    os.close
+//    println(data)
 
-    connection.connect
+    Http.post(getConnection("/datapoints/"), data)
   }
 }

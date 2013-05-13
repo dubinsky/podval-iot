@@ -16,50 +16,103 @@
 
 package org.podval.iot.app
 
+import org.podval.iot.cosm.{Cosm, Datapoint}
+
 import org.podval.iot.platform.raspberrypi.RaspberryPi
+import org.podval.iot.device.i2c.{Ads1x15, Sht21, SevenSegment, Mpl115a2}
+
+import org.kohsuke.args4j.{CmdLineParser, CmdLineException, Option => Arg}
+
 import java.util.Date
-import org.podval.iot.device.i2c.{Sht21, SevenSegment, Mpl115a2}
+
+import scala.collection.JavaConversions._
+
+
+class Sensor {
+
+  def run {
+    val feed = new Cosm(cosmKey).getFeed(cosmFeed)
+    val temperatureDatastream = feed.getDatastream(1)
+    val humidityDatastream = feed.getDatastream(2)
+
+    val pi = new RaspberryPi
+    val bus = pi.i2c
+
+    val sht21 = new Sht21(bus)
+    val sht21Display = new SevenSegment(bus, 0)
+
+    val ads1015 = new Ads1x15(bus, 0)
+
+//    val mpl115a2 = new Mpl115a2(bus)
+//    val mpl115a2Display = new SevenSegment(bus, 1)
+
+    val timeDisplay = new SevenSegment(bus, 2)
+
+    while (true) {
+      val now = new Date
+      val seconds = now.getSeconds
+
+      val temperature = sht21.temperature
+
+      val humidity = sht21.humidity
+
+
+      println("ADC (milliVolts): " + ads1015.readADCSingleEnded(3))
+
+
+      sht21Display.setLeft(toDisplay(temperature))
+      sht21Display.setLeftDot(true)
+
+      sht21Display.setRight(toDisplay(humidity))
+      sht21Display.setRightDot(true)
+
+      sht21Display.update
+
+      //val temperature2 = math.max(0, math.round(mpl115a2.temperature))
+      //      mpl115a2Display.setLeft(temperature2) // conversions are so wrong that the "digit" is 21...
+      //mpl115a2Display.setLeftDot(true)
+      //mpl115a2Display.update
+
+      timeDisplay.setLeft(now.getHours)
+      timeDisplay.setRight(now.getMinutes)
+      timeDisplay.setColon((seconds % 2) == 0)
+      timeDisplay.update
+
+      if ((seconds % 30) == 0) {
+        temperatureDatastream.addDatapoint(Datapoint(now, temperature))
+        humidityDatastream.addDatapoint(Datapoint(now, humidity))
+      }
+
+      Thread.sleep(1000)
+    }
+  }
+
+
+  def toDisplay(value: Float): Int = math.max(0, math.round(value))
+
+
+  @Arg(name="--feed")
+  private var cosmFeed: Int = _
+
+
+  @Arg(name="--key")
+  private var cosmKey: String = _
+}
 
 
 object Sensor {
 
   def main(args: Array[String]) {
-    val pi = new RaspberryPi
-    val bus = pi.i2c
-    val sht21 = new Sht21(bus)
-    val sht21Display = new SevenSegment(bus, 0)
-    val mpl115a2 = new Mpl115a2(bus)
-    val mpl115a2Display = new SevenSegment(bus, 1)
-
-    val timeDisplay = new SevenSegment(pi.i2c, 2)
-
-    while (true) {
-      val temperature = math.max(0, math.round(sht21.temperature))
-      val humidity = math.max(0, math.round(sht21.humidity))
-
-      sht21Display.setLeft(temperature)
-      sht21Display.setLeftDot(true)
-
-      sht21Display.setRight(humidity)
-      sht21Display.setRightDot(true)
-
-      sht21Display.update
-
-      val temperature2 = math.max(0, math.round(mpl115a2.temperature))
-//      mpl115a2Display.setLeft(temperature2) // conversions are so wrong that the "digit" is 21...
-      mpl115a2Display.setLeftDot(true)
-
-      mpl115a2Display.update
-
-
-      val date = new Date
-
-      timeDisplay.setLeft(date.getHours)
-      timeDisplay.setRight(date.getMinutes)
-      timeDisplay.setColon((date.getSeconds % 2) == 0)
-      timeDisplay.update
-
-      Thread.sleep(1000)
+    val app = new Sensor
+    val parser = new CmdLineParser(app)
+    try {
+      parser.parseArgument(args.toSeq)
+      app.run
+    } catch {
+      case e: CmdLineException =>
+        // handling of wrong arguments
+        System.err.println(e.getMessage)
+        parser.printUsage(System.err)
     }
   }
 }

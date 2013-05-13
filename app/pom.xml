@@ -35,6 +35,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.podval.iot</groupId>
+            <artifactId>org.podval.iot.cosm</artifactId>
+            <version>0.1-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.podval.iot.platform</groupId>
             <artifactId>org.podval.iot.platform.raspberrypi</artifactId>
             <version>0.1-SNAPSHOT</version>
@@ -44,6 +50,11 @@
             <groupId>org.podval.iot.device</groupId>
             <artifactId>org.podval.iot.device.i2c</artifactId>
             <version>0.1-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>args4j</groupId>
+            <artifactId>args4j</artifactId>
         </dependency>
     </dependencies>
 </project>

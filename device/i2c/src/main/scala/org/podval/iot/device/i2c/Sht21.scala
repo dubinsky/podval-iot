@@ -39,7 +39,7 @@ final class Sht21(bus: Bus) {
   private[this] def readMeasurement(command: Int, hold: Boolean): Int = {
     address.writeByte(command.toByte)
     
-    if (hold == false) {
+    if (!hold) {
       // wait for conversion, 14 bits = 85ms
       Thread.sleep(85)
     }
@@ -52,7 +52,7 @@ final class Sht21(bus: Bus) {
       // val checksum = bytes(2)
       // val stat = bytes(1) & 0x3
       // check the sum
-      result
+      result & 0xffff // Avoid sign-switch when the high bit of the value becomes 1 :)
     }
   }
 
