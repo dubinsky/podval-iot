@@ -45,7 +45,7 @@ class Sensor {
     val ads1015 = new Ads1x15(bus, 0)
     val ads1015Display = new SevenSegment(bus, 1)
 
-//    val mpl115a2 = new Mpl115a2(bus)
+    val mpl115a2 = new Mpl115a2(bus)
 //    val mpl115a2Display = new SevenSegment(bus, 3)
 
     val timeDisplay = new SevenSegment(bus, 2)
@@ -70,6 +70,7 @@ class Sensor {
       ads1015Display.setLeftDot(true)
       ads1015Display.update
 
+      mpl115a2.reading
       //val temperature2 = math.max(0, math.round(mpl115a2.temperature))
       //      mpl115a2Display.setLeft(temperature2) // conversions are so wrong that the "digit" is 21...
       //mpl115a2Display.setLeftDot(true)
@@ -127,5 +128,5 @@ object Sensor {
 object Tmp36 {
 
   // 750 mV at 25 degrees Celsius; 10 mV = 1 degree
-  def toCelsius(millivolts: Int): Float = 25.0f + (millivolts - 750) / 10
+  def toCelsius(millivolts: Int): Float = 25.0f + (millivolts - 750) / 10f
 }

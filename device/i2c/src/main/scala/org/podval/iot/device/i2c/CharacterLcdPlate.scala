@@ -2,15 +2,7 @@ package org.podval.iot.device.i2c
 
 import org.podval.iot.i2c.Address
 
-
-final class CharacterLcdPlate(address: Address) {
-
-  private[this] val expander = new Mcp23017(address)
-
-
-  /*
-#!/usr/bin/python
-
+/*
 # Python library for Adafruit RGB-backlit LCD plate for Raspberry Pi.
 # Written by Adafruit Industries.  MIT license.
 
@@ -18,91 +10,24 @@ final class CharacterLcdPlate(address: Address) {
 # and constants are based on code from lrvick and LiquidCrystal.
 # lrvic - https://github.com/lrvick/raspi-hd44780/blob/master/hd44780.py
 # LiquidCrystal - https://github.com/arduino/Arduino/blob/master/libraries/LiquidCrystal/LiquidCrystal.cpp
+ */
+final class CharacterLcdPlate(address: Address) { // 0x20
 
-from Adafruit_I2C import Adafruit_I2C
-from time import sleep
-
-class Adafruit_CharLCDPlate(Adafruit_I2C):
-
-    # ----------------------------------------------------------------------
-    # Constants
-
-    # Port expander registers
-    MCP23017_IOCON_BANK0    = 0x0A  # IOCON when Bank 0 active
-    MCP23017_IOCON_BANK1    = 0x15  # IOCON when Bank 1 active
-    # These are register addresses when in Bank 1 only:
-    MCP23017_GPIOA          = 0x09
-    MCP23017_IODIRB         = 0x10
-    MCP23017_GPIOB          = 0x19
-
-    # Port expander input pin definitions
-    SELECT                  = 0
-    RIGHT                   = 1
-    DOWN                    = 2
-    UP                      = 3
-    LEFT                    = 4
-
-    # LED colors
-    OFF                     = 0x00
-    RED                     = 0x01
-    GREEN                   = 0x02
-    BLUE                    = 0x04
-    YELLOW                  = RED + GREEN
-    TEAL                    = GREEN + BLUE
-    VIOLET                  = RED + BLUE
-    WHITE                   = RED + GREEN + BLUE
-    ON                      = RED + GREEN + BLUE
-
-    # LCD Commands
-    LCD_CLEARDISPLAY        = 0x01
-    LCD_RETURNHOME          = 0x02
-    LCD_ENTRYMODESET        = 0x04
-    LCD_DISPLAYCONTROL      = 0x08
-    LCD_CURSORSHIFT         = 0x10
-    LCD_FUNCTIONSET         = 0x20
-    LCD_SETCGRAMADDR        = 0x40
-    LCD_SETDDRAMADDR        = 0x80
-
-    # Flags for display on/off control
-    LCD_DISPLAYON           = 0x04
-    LCD_DISPLAYOFF          = 0x00
-    LCD_CURSORON            = 0x02
-    LCD_CURSOROFF           = 0x00
-    LCD_BLINKON             = 0x01
-    LCD_BLINKOFF            = 0x00
-
-    # Flags for display entry mode
-    LCD_ENTRYRIGHT          = 0x00
-    LCD_ENTRYLEFT           = 0x02
-    LCD_ENTRYSHIFTINCREMENT = 0x01
-    LCD_ENTRYSHIFTDECREMENT = 0x00
-
-    # Flags for display/cursor shift
-    LCD_DISPLAYMOVE = 0x08
-    LCD_CURSORMOVE  = 0x00
-    LCD_MOVERIGHT   = 0x04
-    LCD_MOVELEFT    = 0x00
+  private[this] val expander = new Mcp23017(address)
 
 
-    # ----------------------------------------------------------------------
-    # Constructor
+  // I2C is relatively slow.  MCP output port states are cached
+  // so we don't need to constantly poll-and-change bit states.
+  // self.porta, self.portb, self.ddrb = 0, 0, 0b00010000
 
-    def __init__(self, busnum=-1, addr=0x20, debug=False):
+  // Set MCP23017 IOCON register to Bank 0 with sequential operation.
+  // If chip is already set for Bank 0, this will just write to OLATB,
+  // which won't seriously bother anything on the plate right now
+  // (blue backlight LED will come on, but that's done in the next
+  // step anyway).
+  address.writeByte(CharacterLcdPlate.MCP23017_IOCON_BANK1, 0) // writeByteData
 
-        self.i2c = Adafruit_I2C(addr, busnum, debug)
-
-        # I2C is relatively slow.  MCP output port states are cached
-        # so we don't need to constantly poll-and-change bit states.
-        self.porta, self.portb, self.ddrb = 0, 0, 0b00010000
-
-        # Set MCP23017 IOCON register to Bank 0 with sequential operation.
-        # If chip is already set for Bank 0, this will just write to OLATB,
-        # which won't seriously bother anything on the plate right now
-        # (blue backlight LED will come on, but that's done in the next
-        # step anyway).
-        self.i2c.bus.write_byte_data(
-          self.i2c.address, self.MCP23017_IOCON_BANK1, 0)
-
+  /*
         # Brute force reload ALL registers to known state.  This also
         # sets up all the input pins, pull-ups, etc. for the Pi Plate.
         self.i2c.bus.write_i2c_block_data(
@@ -482,4 +407,63 @@ if __name__ == '__main__':
                     prev = b
                 break
    */
+}
+
+
+object CharacterLcdPlate {
+//  // Port expander registers
+  val MCP23017_IOCON_BANK0: Byte = 0x0A  // IOCON when Bank 0 active
+  val MCP23017_IOCON_BANK1: Byte = 0x15  // IOCON when Bank 1 active
+//  // These are register addresses when in Bank 1 only:
+//  MCP23017_GPIOA          = 0x09
+//  MCP23017_IODIRB         = 0x10
+//  MCP23017_GPIOB          = 0x19
+//
+//  // Port expander input pin definitions
+//  SELECT                  = 0
+//  RIGHT                   = 1
+//  DOWN                    = 2
+//  UP                      = 3
+//  LEFT                    = 4
+//
+//  // LED colors
+//  OFF                     = 0x00
+//  RED                     = 0x01
+//  GREEN                   = 0x02
+//  BLUE                    = 0x04
+//  YELLOW                  = RED + GREEN
+//  TEAL                    = GREEN + BLUE
+//  VIOLET                  = RED + BLUE
+//  WHITE                   = RED + GREEN + BLUE
+//  ON                      = RED + GREEN + BLUE
+//
+//  // LCD Commands
+//  LCD_CLEARDISPLAY        = 0x01
+//  LCD_RETURNHOME          = 0x02
+//  LCD_ENTRYMODESET        = 0x04
+//  LCD_DISPLAYCONTROL      = 0x08
+//  LCD_CURSORSHIFT         = 0x10
+//  LCD_FUNCTIONSET         = 0x20
+//  LCD_SETCGRAMADDR        = 0x40
+//  LCD_SETDDRAMADDR        = 0x80
+//
+//  // Flags for display on/off control
+//  LCD_DISPLAYON           = 0x04
+//  LCD_DISPLAYOFF          = 0x00
+//  LCD_CURSORON            = 0x02
+//  LCD_CURSOROFF           = 0x00
+//  LCD_BLINKON             = 0x01
+//  LCD_BLINKOFF            = 0x00
+//
+//  // Flags for display entry mode
+//  LCD_ENTRYRIGHT          = 0x00
+//  LCD_ENTRYLEFT           = 0x02
+//  LCD_ENTRYSHIFTINCREMENT = 0x01
+//  LCD_ENTRYSHIFTDECREMENT = 0x00
+//
+//  // Flags for display/cursor shift
+//  LCD_DISPLAYMOVE = 0x08
+//  LCD_CURSORMOVE  = 0x00
+//  LCD_MOVERIGHT   = 0x04
+//  LCD_MOVELEFT    = 0x00
 }

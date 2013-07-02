@@ -26,19 +26,24 @@ import org.podval.iot.i2c.Bus
  *
  * @param bus
  */
-// XXX Does not work!!!
 final class Mpl115a2(bus: Bus) {
 
   private[this] val address = bus.address(0x60)
 
   // Gets the factory-set coefficients for this particular sensor
-  address.writeByte(Mpl115a2.a0Coeff)
-  private[this] val coeffBytes = address.readBytes(8)
-  private[this] def mkFloat(msb: Byte, lsb: Byte): Float = ((msb << 8) | lsb).toFloat
-  val a0 : Float = mkFloat(coeffBytes(0), coeffBytes(1)) / 8.0f
-  val b1 : Float = mkFloat(coeffBytes(2), coeffBytes(3)) / 8192.0f
-  val b2 : Float = mkFloat(coeffBytes(4), coeffBytes(5)) / 16384.0f
-  val c12: Float = mkFloat(coeffBytes(6), (coeffBytes(7) >> 2).toByte) / 4194304.0f
+
+  private[this] def readShort(register: Byte): Int = (address.readByte(register) << 8) | address.readByte((register+1).toByte)
+
+  val a0_ : Int = readShort(Mpl115a2.a0Coeff)   // mkShort(coeffBytes(0), coeffBytes(1))
+  val b1_ : Int = readShort(Mpl115a2.b1Coeff)   // mkShort(coeffBytes(2), coeffBytes(3))
+  val b2_ : Int = readShort(Mpl115a2.b2Coeff)   // mkShort(coeffBytes(4), coeffBytes(5))
+  val c12_ : Int = readShort(Mpl115a2.c12Coeff) >> 2 // (((coeffBytes(6) << 8) | coeffBytes(7)) >> 2)
+
+  val a0 : Float = a0_ / 8.0f
+  val b1 : Float = b1_ / 8192.0f
+  val b2 : Float = b2_ / 16384.0f
+  val c12: Float = c12 / 4194304.0f
+
   println("coefficients: " + a0 + " " + b1 + " " + b2 + " " + c12)
 
   // Pressure in kPa
@@ -54,23 +59,21 @@ final class Mpl115a2(bus: Bus) {
     address.writeByte(Mpl115a2.startConversion, 0x00)
 
     // Wait a bit for the conversion to complete (3ms max)
-    Thread.sleep(5)
+    Thread.sleep(6)
 
-    address.writeByte(Mpl115a2.pressure)
-
-    def mk12bits(msb: Byte, lsb: Byte): Short = (((msb << 8) | lsb) >> 6).toShort
-
-    val bytes = address.readBytes(4)
-    println("bytes " + bytes.mkString(","))
-    val pressureRaw = mk12bits(bytes(0), bytes(1))
-    val temperatureRaw = mk12bits(bytes(2), bytes(3))
+    val pressure_    : Int = readShort(Mpl115a2.pressure   ) >> 6
+    val temperature_ : Int = readShort(Mpl115a2.temperature) >> 6
 
     // See datasheet p.6 for evaluation sequence
-    val pressureComp: Float = a0 + (b1 + c12*temperatureRaw)*pressureRaw + b2*temperatureRaw
+    val pressureComp: Float = a0 + (b1 + c12*temperature_)*pressure_ + b2*temperature_
+    // Pcomp will produce a value of 0 with an input pressure of 50 kPa and
+    // will produce a full-scale value of 1023 with an input pressure of 115 kPa.
 
     // Return pressure and temperature as floating point values
-    val pressure = ((65.0f / 1023.0f) * pressureComp) + 50.0f           // kPa
-    val temperature = (temperatureRaw.toFloat - 498.0f) / -5.35f +25.0f // C
+    val pressure = ((115.0f - 50.0f) / 1023.0f) * pressureComp + 50.0f           // kPa   XXX 60.0f? (datasheet)
+    val temperature = (temperature_.toFloat - 498.0f) / -5.35f + 25.0f            // C
+
+    println("pressure= " + pressure + "kPa; temperature=" + temperature + "C")
 
     (pressure, temperature)
   }
